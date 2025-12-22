@@ -1,8 +1,9 @@
 import filepath
 import gleam/int
 import gleam/list
+import gleam/result
+import gleam/set
 import gleam/string
-import gleam/uri
 import justin
 import simplifile
 
@@ -19,7 +20,7 @@ pub type RouteDef {
 }
 
 pub fn main(definitions: List(RouteDef), output_path: String) {
-  let definitions = prepare_definitions(definitions)
+  use definitions <- result.try(prepare_definitions(definitions))
 
   let generated_code =
     generate_imports()
@@ -40,9 +41,36 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
 }
 
 fn prepare_definitions(definitions: List(RouteDef)) {
-  list.map(definitions, fn(def) {
-    RouteDef(..def, name: justin.pascal_case(def.name))
-  })
+  list.try_map(definitions, prepare_definition)
+}
+
+fn prepare_definition(def: RouteDef) {
+  let name = justin.pascal_case(def.name)
+
+  let sanitized_segments =
+    def.path
+    |> list.map(fn(segment) {
+      case segment {
+        Lit(_) -> segment
+        Str(name) -> Str(justin.snake_case(name))
+        Int(name) -> Int(justin.snake_case(name))
+      }
+    })
+
+  let segment_names =
+    sanitized_segments
+    |> list.filter_map(fn(segment) {
+      case segment {
+        Lit(_) -> Error(Nil)
+        Str(name) -> Ok(name)
+        Int(name) -> Ok(name)
+      }
+    })
+
+  case list.length(segment_names) == set.size(set.from_list(segment_names)) {
+    True -> RouteDef(name:, path: sanitized_segments) |> Ok
+    False -> Error("Route " <> def.name <> " has duplicate parameter names")
+  }
 }
 
 fn generate_imports() {
@@ -189,9 +217,9 @@ fn generate_route_to_path_case(def: RouteDef) {
 
 fn generate_helpers() {
   "
-    fn with_int(str: String, fun) {
-      int.parse(str)
-      |> result.try(fun)
-    }
+fn with_int(str: String, fun) {
+    int.parse(str)
+    |> result.try(fun)
+}
 "
 }

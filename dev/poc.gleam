@@ -8,8 +8,12 @@ const routes = [
   RouteDef(name: "home", path: []),
   RouteDef(name: "profile", path: [Lit("profile"), Str("id")]),
   RouteDef(name: "order", path: [Lit("orders"), Int("id")]),
+  RouteDef(
+    name: "comments",
+    path: [Lit("posts"), Int("postId"), Lit("comments"), Int("commentId")],
+  ),
 ]
 
 pub fn main() {
-  route_gen.main(routes, "src/routes.gleam")
+  echo route_gen.main(routes, "dev/generated.gleam")
 }
