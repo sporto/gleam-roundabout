@@ -53,13 +53,27 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
 fn prepare_definitions(
   definitions: List(RouteDef),
 ) -> Result(List(ValidRouteDef), String) {
-  list.try_map(definitions, prepare_definition)
+  use definitions <- result.try(list.try_map(definitions, prepare_definition))
+
+  use definitions <- assert_no_duplicate_variant_names(definitions)
+
+  Ok(definitions)
+}
+
+fn assert_no_duplicate_variant_names(definitions: List(ValidRouteDef), next) {
+  let variant_names = list.map(definitions, fn(def) { def.name })
+  let as_set = set.from_list(variant_names)
+
+  case list.length(variant_names) == set.size(as_set) {
+    True -> next(definitions)
+    False -> Error("Routes contain duplicate names")
+  }
 }
 
 fn prepare_definition(def: RouteDef) {
   let name = justin.pascal_case(def.name)
 
-  let sanitized_segments =
+  let segments =
     def.path
     |> list.map(fn(segment) {
       case segment {
@@ -69,8 +83,14 @@ fn prepare_definition(def: RouteDef) {
       }
     })
 
+  use segments <- assert_no_duplicate_param_names(name, segments)
+
+  ValidRouteDef(name:, segments: segments) |> Ok
+}
+
+fn assert_no_duplicate_param_names(name, segments, next) {
   let segment_names =
-    sanitized_segments
+    segments
     |> list.filter_map(fn(segment) {
       case segment {
         ValidLit(_) -> Error(Nil)
@@ -79,9 +99,11 @@ fn prepare_definition(def: RouteDef) {
       }
     })
 
-  case list.length(segment_names) == set.size(set.from_list(segment_names)) {
-    True -> ValidRouteDef(name:, segments: sanitized_segments) |> Ok
-    False -> Error("Route " <> def.name <> " has duplicate parameter names")
+  let as_set = set.from_list(segment_names)
+
+  case list.length(segment_names) == set.size(as_set) {
+    True -> next(segments)
+    False -> Error("Route " <> name <> " has duplicate parameter names")
   }
 }
 
