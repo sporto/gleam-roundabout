@@ -19,6 +19,16 @@ pub type RouteDef {
   RouteDef(name: String, path: List(Segment))
 }
 
+type ValidSegment {
+  ValidLit(val: String)
+  ValidStr(name: String)
+  ValidInt(name: String)
+}
+
+type ValidRouteDef {
+  ValidRouteDef(name: String, segments: List(ValidSegment))
+}
+
 pub fn main(definitions: List(RouteDef), output_path: String) {
   use definitions <- result.try(prepare_definitions(definitions))
 
@@ -40,7 +50,9 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
   Ok(Nil)
 }
 
-fn prepare_definitions(definitions: List(RouteDef)) {
+fn prepare_definitions(
+  definitions: List(RouteDef),
+) -> Result(List(ValidRouteDef), String) {
   list.try_map(definitions, prepare_definition)
 }
 
@@ -51,9 +63,9 @@ fn prepare_definition(def: RouteDef) {
     def.path
     |> list.map(fn(segment) {
       case segment {
-        Lit(_) -> segment
-        Str(name) -> Str(justin.snake_case(name))
-        Int(name) -> Int(justin.snake_case(name))
+        Lit(value) -> ValidLit(value)
+        Str(name) -> ValidStr(justin.snake_case(name))
+        Int(name) -> ValidInt(justin.snake_case(name))
       }
     })
 
@@ -61,14 +73,14 @@ fn prepare_definition(def: RouteDef) {
     sanitized_segments
     |> list.filter_map(fn(segment) {
       case segment {
-        Lit(_) -> Error(Nil)
-        Str(name) -> Ok(name)
-        Int(name) -> Ok(name)
+        ValidLit(_) -> Error(Nil)
+        ValidStr(name) -> Ok(name)
+        ValidInt(name) -> Ok(name)
       }
     })
 
   case list.length(segment_names) == set.size(set.from_list(segment_names)) {
-    True -> RouteDef(name:, path: sanitized_segments) |> Ok
+    True -> ValidRouteDef(name:, segments: sanitized_segments) |> Ok
     False -> Error("Route " <> def.name <> " has duplicate parameter names")
   }
 }
@@ -78,7 +90,7 @@ fn generate_imports() {
   |> string.join("\n")
 }
 
-fn generate_types(definitions: List(RouteDef)) {
+fn generate_types(definitions: List(ValidRouteDef)) {
   let variants =
     definitions
     |> list.map(generate_type_variant)
@@ -87,24 +99,24 @@ fn generate_types(definitions: List(RouteDef)) {
   "pub type Route {\n" <> variants <> "\n}"
 }
 
-fn generate_type_variant(def: RouteDef) {
+fn generate_type_variant(def: ValidRouteDef) {
   let params =
-    def.path
+    def.segments
     |> list.filter_map(generate_type_variant_param)
     |> string.join(", ")
 
   "  " <> def.name <> "(" <> params <> ")"
 }
 
-fn generate_type_variant_param(segment: Segment) {
+fn generate_type_variant_param(segment: ValidSegment) {
   case segment {
-    Int(name) -> Ok(name <> ": Int")
-    Lit(_) -> Error(Nil)
-    Str(name) -> Ok(name <> ": String")
+    ValidInt(name) -> Ok(name <> ": Int")
+    ValidLit(_) -> Error(Nil)
+    ValidStr(name) -> Ok(name <> ": String")
   }
 }
 
-fn generate_segments_to_route(definitions: List(RouteDef)) {
+fn generate_segments_to_route(definitions: List(ValidRouteDef)) {
   let segments_to_route_cases =
     definitions
     |> list.map(generate_segments_to_route_case)
@@ -120,14 +132,14 @@ fn generate_segments_to_route(definitions: List(RouteDef)) {
   )
 }
 
-fn generate_segments_to_route_case(def: RouteDef) {
+fn generate_segments_to_route_case(def: ValidRouteDef) {
   let matched_params =
-    def.path
+    def.segments
     |> list.map(fn(seg) {
       case seg {
-        Lit(val) -> "\"" <> val <> "\""
-        Str(name) -> name
-        Int(name) -> name
+        ValidLit(val) -> "\"" <> val <> "\""
+        ValidStr(name) -> name
+        ValidInt(name) -> name
       }
     })
     |> string.join(", ")
@@ -135,12 +147,12 @@ fn generate_segments_to_route_case(def: RouteDef) {
   let left = "[" <> matched_params <> "]"
 
   let match_right_inner =
-    def.path
+    def.segments
     |> list.filter_map(fn(seg) {
       case seg {
-        Lit(_) -> Error(Nil)
-        Str(name) -> Ok(name)
-        Int(name) -> Ok(name)
+        ValidLit(_) -> Error(Nil)
+        ValidStr(name) -> Ok(name)
+        ValidInt(name) -> Ok(name)
       }
     })
     |> string.join(", ")
@@ -155,11 +167,11 @@ fn generate_segments_to_route_case(def: RouteDef) {
   let right = def.name <> match_right_inner <> " |> Ok"
 
   let right =
-    list.fold(def.path, right, fn(acc, segment) {
+    list.fold(def.segments, right, fn(acc, segment) {
       case segment {
-        Lit(_) -> acc
-        Str(_) -> acc
-        Int(name) -> {
+        ValidLit(_) -> acc
+        ValidStr(_) -> acc
+        ValidInt(name) -> {
           "with_int(" <> name <> ", fn(" <> name <> ") { " <> acc <> " })"
         }
       }
@@ -168,7 +180,7 @@ fn generate_segments_to_route_case(def: RouteDef) {
   indent <> indent <> left <> " -> " <> right
 }
 
-fn generate_route_to_path(definitions: List(RouteDef)) {
+fn generate_route_to_path(definitions: List(ValidRouteDef)) {
   let route_to_path_cases =
     definitions
     |> list.map(generate_route_to_path_case)
@@ -184,25 +196,25 @@ fn generate_route_to_path(definitions: List(RouteDef)) {
   )
 }
 
-fn generate_route_to_path_case(def: RouteDef) {
+fn generate_route_to_path_case(def: ValidRouteDef) {
   let variant_params =
-    def.path
+    def.segments
     |> list.filter_map(fn(seg) {
       case seg {
-        Lit(_) -> Error(Nil)
-        Str(name) -> Ok(name)
-        Int(name) -> Ok(name)
+        ValidLit(_) -> Error(Nil)
+        ValidStr(name) -> Ok(name)
+        ValidInt(name) -> Ok(name)
       }
     })
     |> string.join(", ")
 
   let path =
-    def.path
+    def.segments
     |> list.map(fn(seg) {
       case seg {
-        Lit(val) -> "\"" <> val <> "/\""
-        Str(name) -> name
-        Int(name) -> "int.to_string(" <> name <> ")"
+        ValidLit(val) -> "\"" <> val <> "/\""
+        ValidStr(name) -> name
+        ValidInt(name) -> "int.to_string(" <> name <> ")"
       }
     })
     |> string.join(" <> ")
