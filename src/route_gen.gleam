@@ -1,5 +1,4 @@
 import filepath
-import gleam/int
 import gleam/list
 import gleam/result
 import gleam/set
@@ -16,7 +15,7 @@ pub type Segment {
 }
 
 pub type RouteDef {
-  RouteDef(name: String, path: List(Segment))
+  RouteDef(name: String, path: List(Segment), sub: List(RouteDef))
 }
 
 type ValidSegment {
@@ -26,20 +25,35 @@ type ValidSegment {
 }
 
 type ValidRouteDef {
-  ValidRouteDef(name: String, segments: List(ValidSegment))
+  ValidRouteDef(
+    name: String,
+    segments: List(ValidSegment),
+    sub: List(ValidRouteDef),
+  )
 }
 
 pub fn main(definitions: List(RouteDef), output_path: String) {
   use definitions <- result.try(prepare_definitions(definitions))
 
+  let types =
+    generate_type_and_subtypes("", definitions)
+    |> result.unwrap("")
+
+  let segments_to_route =
+    generate_segments_and_subs_to_route("", definitions)
+    |> result.unwrap("")
+
+  let routes_to_path =
+    generate_route_and_subs_to_path("", definitions)
+    |> result.unwrap("")
+
   let generated_code =
     generate_imports()
     <> "\n\n"
-    <> generate_types(definitions)
+    <> types
+    <> segments_to_route
     <> "\n\n"
-    <> generate_segments_to_route(definitions)
-    <> "\n\n"
-    <> generate_route_to_path(definitions)
+    <> routes_to_path
     <> "\n\n"
     <> generate_helpers()
 
@@ -85,7 +99,9 @@ fn prepare_definition(def: RouteDef) {
 
   use segments <- result.try(assert_no_duplicate_param_names(name, segments))
 
-  ValidRouteDef(name:, segments: segments) |> Ok
+  use sub <- result.try(prepare_definitions(def.sub))
+
+  ValidRouteDef(name:, segments:, sub:) |> Ok
 }
 
 fn assert_no_duplicate_param_names(name, segments) {
@@ -112,22 +128,47 @@ fn generate_imports() {
   |> string.join("\n")
 }
 
-fn generate_types(definitions: List(ValidRouteDef)) {
-  let variants =
-    definitions
-    |> list.map(generate_type_variant)
-    |> string.join("\n")
+fn generate_type_and_subtypes(
+  namespace: String,
+  definitions: List(ValidRouteDef),
+) {
+  case list.is_empty(definitions) {
+    True -> Error(Nil)
+    False -> {
+      let sub_types =
+        list.filter_map(definitions, fn(def) {
+          generate_type_and_subtypes(def.name, def.sub)
+        })
+        |> string.join("\n")
 
-  "pub type Route {\n" <> variants <> "\n}"
+      let out = generate_type(namespace, definitions) <> "\n\n" <> sub_types
+
+      Ok(out)
+    }
+  }
 }
 
-fn generate_type_variant(def: ValidRouteDef) {
+fn generate_type(namespace: String, definitions: List(ValidRouteDef)) {
+  let variants =
+    definitions
+    |> list.map(generate_type_variant(namespace, _))
+    |> string.join("\n")
+
+  "pub type " <> namespace <> "Route {\n" <> variants <> "\n}"
+}
+
+fn generate_type_variant(namespace: String, def: ValidRouteDef) {
   let params =
     def.segments
     |> list.filter_map(generate_type_variant_param)
     |> string.join(", ")
 
-  "  " <> def.name <> "(" <> params <> ")"
+  let sub = case list.is_empty(def.sub) {
+    True -> ""
+    False -> ", sub: " <> namespace <> def.name <> "Route"
+  }
+
+  "  " <> namespace <> def.name <> "(" <> params <> sub <> ")"
 }
 
 fn generate_type_variant_param(segment: ValidSegment) {
@@ -138,14 +179,49 @@ fn generate_type_variant_param(segment: ValidSegment) {
   }
 }
 
-fn generate_segments_to_route(definitions: List(ValidRouteDef)) {
+fn generate_segments_and_subs_to_route(
+  namespace: String,
+  definitions: List(ValidRouteDef),
+) {
+  case list.is_empty(definitions) {
+    True -> Error(Nil)
+    False -> {
+      let sub_types =
+        list.filter_map(definitions, fn(def) {
+          generate_segments_and_subs_to_route(namespace <> def.name, def.sub)
+        })
+        |> string.join("\n")
+
+      let out =
+        generate_segments_to_route(namespace, definitions)
+        <> "\n\n"
+        <> sub_types
+
+      Ok(out)
+    }
+  }
+}
+
+fn generate_segments_to_route(
+  namespace: String,
+  definitions: List(ValidRouteDef),
+) {
   let segments_to_route_cases =
     definitions
-    |> list.map(generate_segments_to_route_case)
+    |> list.map(generate_segments_to_route_case(namespace, _))
     |> string.join("\n")
 
+  let fn_name = case namespace {
+    "" -> "segments_to_route"
+    _ -> justin.camel_case(namespace) <> "_segments_to_route"
+  }
+
   string.trim(
-    "pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {\n"
+    "pub fn "
+    <> fn_name
+    <> "(segments: List(String)) -> Result("
+    <> namespace
+    <> "Route, Nil) {\n"
     <> "  case segments {\n"
     <> segments_to_route_cases
     <> "\n    _ -> Error(Nil)\n"
@@ -154,7 +230,7 @@ fn generate_segments_to_route(definitions: List(ValidRouteDef)) {
   )
 }
 
-fn generate_segments_to_route_case(def: ValidRouteDef) {
+fn generate_segments_to_route_case(namespace: String, def: ValidRouteDef) {
   let matched_params =
     def.segments
     |> list.map(fn(seg) {
@@ -165,6 +241,11 @@ fn generate_segments_to_route_case(def: ValidRouteDef) {
       }
     })
     |> string.join(", ")
+
+  let matched_params = case list.is_empty(def.sub) {
+    True -> matched_params
+    False -> matched_params <> ", ..rest"
+  }
 
   let left = "[" <> matched_params <> "]"
 
@@ -177,6 +258,12 @@ fn generate_segments_to_route_case(def: ValidRouteDef) {
         ValidInt(name) -> Ok(name)
       }
     })
+    |> fn(params) {
+      case list.is_empty(def.sub) {
+        True -> params
+        False -> list.append(params, ["sub"])
+      }
+    }
     |> string.join(", ")
 
   let match_right_inner = case match_right_inner {
@@ -186,7 +273,19 @@ fn generate_segments_to_route_case(def: ValidRouteDef) {
     }
   }
 
-  let right = def.name <> match_right_inner <> " |> Ok"
+  let right = case list.is_empty(def.sub) {
+    True -> {
+      namespace <> def.name <> match_right_inner <> " |> Ok"
+    }
+    False -> {
+      let fn_name =
+        justin.snake_case(namespace <> def.name <> "_segments_to_route")
+
+      fn_name <> "(rest) |> result.map(fn(sub) {
+" <> namespace <> def.name <> match_right_inner <> "
+        })"
+    }
+  }
 
   let right =
     list.fold(def.segments, right, fn(acc, segment) {
@@ -202,14 +301,39 @@ fn generate_segments_to_route_case(def: ValidRouteDef) {
   indent <> indent <> left <> " -> " <> right
 }
 
-fn generate_route_to_path(definitions: List(ValidRouteDef)) {
+fn generate_route_and_subs_to_path(namespace: String, defs: List(ValidRouteDef)) {
+  case list.is_empty(defs) {
+    True -> Error(Nil)
+    False -> {
+      let sub_types =
+        list.filter_map(defs, fn(def) {
+          generate_route_and_subs_to_path(namespace <> def.name, def.sub)
+        })
+        |> string.join("\n")
+
+      let out = generate_route_to_path(namespace, defs) <> "\n\n" <> sub_types
+      Ok(out)
+    }
+  }
+}
+
+fn generate_route_to_path(namespace: String, definitions: List(ValidRouteDef)) {
   let route_to_path_cases =
     definitions
-    |> list.map(generate_route_to_path_case)
+    |> list.map(generate_route_to_path_case(namespace, _))
     |> string.join("\n")
 
+  let fn_name = case namespace {
+    "" -> "route_to_path"
+    _ -> justin.snake_case(namespace) <> "_route_to_path"
+  }
+
   string.trim(
-    "pub fn route_to_path(route: Route) -> String {\n"
+    "pub fn "
+    <> fn_name
+    <> "(route: "
+    <> namespace
+    <> "Route) -> String {\n"
     <> indent
     <> "case route {\n"
     <> route_to_path_cases
@@ -218,7 +342,7 @@ fn generate_route_to_path(definitions: List(ValidRouteDef)) {
   )
 }
 
-fn generate_route_to_path_case(def: ValidRouteDef) {
+fn generate_route_to_path_case(namespace: String, def: ValidRouteDef) {
   let variant_params =
     def.segments
     |> list.filter_map(fn(seg) {
@@ -229,6 +353,13 @@ fn generate_route_to_path_case(def: ValidRouteDef) {
       }
     })
     |> string.join(", ")
+
+  let variant_params = case list.is_empty(def.sub) {
+    True -> variant_params
+    False -> {
+      variant_params <> ", sub"
+    }
+  }
 
   let path =
     def.segments
@@ -241,12 +372,28 @@ fn generate_route_to_path_case(def: ValidRouteDef) {
     })
     |> string.join(" <> ")
 
+  let path = case list.is_empty(def.sub) {
+    True -> path
+    False ->
+      path
+      <> " <> "
+      <> justin.snake_case(namespace <> def.name)
+      <> "_route_to_path(sub)"
+  }
+
   let path = case path {
     "" -> "\"/\""
     path -> "\"/\" <> " <> path
   }
 
-  indent <> indent <> def.name <> "(" <> variant_params <> ") -> " <> path
+  indent
+  <> indent
+  <> namespace
+  <> def.name
+  <> "("
+  <> variant_params
+  <> ") -> "
+  <> path
 }
 
 fn generate_helpers() {

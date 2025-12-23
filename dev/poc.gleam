@@ -5,12 +5,18 @@ import route_gen.{Int, Lit, RouteDef, Str}
 // geneate functions to create paths
 
 const routes = [
-  RouteDef(name: "home", path: []),
-  RouteDef(name: "profile", path: [Lit("profile"), Str("id")]),
-  RouteDef(name: "order", path: [Lit("orders"), Int("id")]),
+  RouteDef(name: "home", path: [], sub: []),
+  RouteDef(name: "profile", path: [Lit("profile"), Str("id")], sub: []),
+  RouteDef(name: "order", path: [Lit("orders"), Int("id")], sub: []),
   RouteDef(
-    name: "comments",
+    name: "comment",
     path: [Lit("posts"), Int("postId"), Lit("comments"), Int("commentId")],
+    sub: [],
+  ),
+  RouteDef(
+    name: "users",
+    path: [Lit("users"), Int("id")],
+    sub: [RouteDef(name: "new", path: [Lit("new")], sub: [])],
   ),
 ]
 
