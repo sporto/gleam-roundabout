@@ -4,6 +4,9 @@ import gleam/result
 import gleam/set
 import gleam/string
 import justin
+import route_gen/generate
+import route_gen/parse
+import route_gen/types
 import simplifile
 
 const indent = "  "
@@ -33,6 +36,12 @@ type ValidRouteDef {
 }
 
 pub fn main(definitions: List(RouteDef), output_path: String) {
+  let definitions_2 =
+    definitions
+    |> list.map(route_def_to_internal)
+
+  use contributions <- result.try(parse.prepare_contributions([], definitions_2))
+
   use definitions <- result.try(prepare_definitions(definitions))
 
   let types =
@@ -47,21 +56,36 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     generate_route_and_subs_to_path("", definitions)
     |> result.unwrap("")
 
+  let helpers = generate.generate_helpers(contributions)
+
   let generated_code =
     generate_imports()
-    <> "\n\n"
     <> types
     <> segments_to_route
-    <> "\n\n"
     <> routes_to_path
-    <> "\n\n"
-    <> generate_helpers()
+    // <> helpers
+    <> generate_utils()
 
   let output_dir = filepath.directory_name(output_path)
   let _ = simplifile.create_directory_all(output_dir)
   let _ = simplifile.write(output_path, generated_code)
 
   Ok(Nil)
+}
+
+fn route_def_to_internal(def: RouteDef) -> types.InputDef {
+  let path =
+    list.map(def.path, fn(seg) {
+      case seg {
+        Lit(val) -> types.Lit(val)
+        Str(val) -> types.Str(val)
+        Int(val) -> types.Int(val)
+      }
+    })
+
+  let sub = list.map(def.sub, route_def_to_internal)
+
+  types.InputDef(name: def.name, path:, sub:)
 }
 
 fn prepare_definitions(
@@ -126,6 +150,7 @@ fn assert_no_duplicate_param_names(name, segments) {
 fn generate_imports() {
   ["import gleam/int", "import gleam/result"]
   |> string.join("\n")
+  <> "\n\n"
 }
 
 fn generate_type_and_subtypes(
@@ -301,17 +326,22 @@ fn generate_segments_to_route_case(namespace: String, def: ValidRouteDef) {
   indent <> indent <> left <> " -> " <> right
 }
 
-fn generate_route_and_subs_to_path(namespace: String, defs: List(ValidRouteDef)) {
-  case list.is_empty(defs) {
+fn generate_route_and_subs_to_path(
+  namespace: String,
+  definitions: List(ValidRouteDef),
+) {
+  case list.is_empty(definitions) {
     True -> Error(Nil)
     False -> {
       let sub_types =
-        list.filter_map(defs, fn(def) {
+        list.filter_map(definitions, fn(def) {
           generate_route_and_subs_to_path(namespace <> def.name, def.sub)
         })
         |> string.join("\n")
 
-      let out = generate_route_to_path(namespace, defs) <> "\n\n" <> sub_types
+      let out =
+        generate_route_to_path(namespace, definitions) <> "\n\n" <> sub_types
+
       Ok(out)
     }
   }
@@ -396,7 +426,7 @@ fn generate_route_to_path_case(namespace: String, def: ValidRouteDef) {
   <> path
 }
 
-fn generate_helpers() {
+fn generate_utils() {
   "
 fn with_int(str: String, fun) {
     int.parse(str)
