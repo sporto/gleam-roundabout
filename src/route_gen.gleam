@@ -1,5 +1,6 @@
 import filepath
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/set
 import gleam/string
@@ -40,7 +41,12 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     definitions
     |> list.map(route_def_to_internal)
 
-  use contributions <- result.try(parse.prepare_contributions([], definitions_2))
+  use contributions <- result.try(parse.prepare_contributions(
+    option.None,
+    definitions_2,
+  ))
+
+  let contributions_namespaced = generate.add_namespace("", contributions)
 
   use definitions <- result.try(prepare_definitions(definitions))
 
@@ -56,14 +62,16 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     generate_route_and_subs_to_path("", definitions)
     |> result.unwrap("")
 
-  let helpers = generate.generate_helpers(contributions)
+  let helpers =
+    generate.generate_helpers(contributions_namespaced)
+    |> result.unwrap("")
 
   let generated_code =
     generate_imports()
     <> types
     <> segments_to_route
     <> routes_to_path
-    // <> helpers
+    <> helpers
     <> generate_utils()
 
   let output_dir = filepath.directory_name(output_path)

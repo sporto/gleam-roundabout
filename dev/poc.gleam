@@ -14,9 +14,12 @@ const routes = [
     sub: [],
   ),
   RouteDef(
-    name: "users",
+    name: "user",
     path: [Lit("users"), Int("id")],
-    sub: [RouteDef(name: "new", path: [Lit("new")], sub: [])],
+    sub: [
+      RouteDef(name: "show", path: [], sub: []),
+      RouteDef(name: "new", path: [Lit("new")], sub: []),
+    ],
   ),
 ]
 

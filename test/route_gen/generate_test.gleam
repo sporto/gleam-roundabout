@@ -1,32 +1,31 @@
 import birdie
+import gleam/option
 import route_gen/generate
 import route_gen/types
 
 pub fn generate_route_helper_test() {
   let contribution =
     types.Contribution(
-      ancestors: [
-        types.ContributionInfo(
-          type_name: "Clients",
-          ns_type_name: "",
-          snake_name: "client",
-          ns_snake_name: "",
-          segment_params: [types.Param("id", "client", types.ParamInt)],
-        ),
-        types.ContributionInfo(
-          type_name: "Orders",
-          ns_type_name: "Clients",
-          snake_name: "orders",
-          ns_snake_name: "client",
-          segment_params: [types.Param("id", "client", types.ParamStr)],
-        ),
-      ],
       children: [],
       info: types.ContributionInfo(
-        type_name: "Track",
-        ns_type_name: "ClientsOrders",
-        snake_name: "track",
-        ns_snake_name: "clients_orders",
+        ancestor: option.Some(
+          types.ContributionInfo(
+            ancestor: option.Some(
+              types.ContributionInfo(
+                ancestor: option.None,
+                name: "Clients",
+                segment_params: [
+                  types.Param("id", types.ParamInt),
+                ],
+              ),
+            ),
+            name: "clients_orders",
+            segment_params: [
+              types.Param("id", types.ParamStr),
+            ],
+          ),
+        ),
+        name: "clients_orders_track",
         segment_params: [],
       ),
     )

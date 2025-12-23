@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/set
 import gleam/string
@@ -9,7 +10,8 @@ import route_gen/types.{
 }
 
 @internal
-pub fn generate_helpers(contributions: List(Contribution)) {
+pub fn generate_helpers(contributions: List(Contribution(types.Namespaced))) {
+  // Only leaf should be generated
   case list.is_empty(contributions) {
     True -> Error(Nil)
     False -> {
@@ -27,101 +29,134 @@ pub fn generate_helpers(contributions: List(Contribution)) {
   }
 }
 
-fn generate_helpers_for_contributions(contributions: List(Contribution)) {
+fn generate_helpers_for_contributions(
+  contributions: List(Contribution(types.Namespaced)),
+) {
   list.map(contributions, generate_helpers_for_contribution)
   |> string.join("")
 }
 
-fn generate_helpers_for_contribution(cont: Contribution) {
-  "pub fn _path("
-  generate_route_helper(cont)
+fn generate_helpers_for_contribution(cont: Contribution(types.Namespaced)) {
+  case list.is_empty(cont.children) {
+    True -> {
+      generate_route_helper(cont)
+    }
+    False -> ""
+  }
+  // "pub fn _path("
 }
 
 @internal
-pub fn generate_route_helper(cont: Contribution) {
-  let fn_name = full_snake_name(cont.ancestors, cont.info) <> "_route"
+pub fn generate_route_helper(cont: Contribution(types.Namespaced)) {
+  // let full_path = list.append(cont.ancestors, [cont.info])
 
-  let full_path = list.append(cont.ancestors, [cont.info])
+  let function_name = justin.snake_case(cont.info.name) <> "_route"
 
-  let params =
-    full_path
-    |> list.flat_map(fn(cont) {
-      cont.segment_params
-      |> list.map(fn(param) {
-        let type_ = case param.kind {
-          types.ParamInt -> "Int"
-          types.ParamStr -> "String"
-        }
+  let function_arguments =
+    get_function_arguments([], cont.info)
+    |> list.map(fn(param) {
+      let type_ = case param.kind {
+        types.ParamInt -> "Int"
+        types.ParamStr -> "String"
+      }
 
-        param.namespace <> param.name <> ": " <> type_
-      })
+      justin.snake_case(param.name) <> ": " <> type_
     })
     |> string.join(", ")
 
+  // full_path
+  // |> list.flat_map(fn(cont) {
+  //   cont.segment_params
+  //   |> list.map(fn(param) {
+  //     let type_ = case param.kind {
+  //       types.ParamInt -> "Int"
+  //       types.ParamStr -> "String"
+  //     }
+
+  //     justin.snake_case(cont.name <> "_" <> param.name) <> ": " <> type_
+  //   })
+  // })
+  // |> string.join(", ")
+
   let body =
-    full_path
-    |> list.reverse
-    |> list.map(fn(cont) {
-      let params =
-        cont.segment_params
-        |> list.map(fn(param) { param.namespace <> param.name })
-        |> fn(entries) {
-          case list.is_empty(cont.segment_params) {
-            True -> entries
-            False -> list.append(entries, ["_"])
-          }
-        }
+    "  "
+    <> generate_route_helper_body([], cont.info)
+    |> string.join("\n  |> ")
 
-      let params = case list.is_empty(params) {
-        True -> ""
-        False -> "(" <> string.join(params, ", ") <> ")"
-      }
-
-      cont.ns_type_name <> cont.type_name <> params
-    })
-    |> string.join(" |> ")
-
-  "pub fn " <> fn_name <> "(" <> params <> ") {\n" <> body <> "\n" <> "}"
+  "pub fn "
+  <> function_name
+  <> "("
+  <> function_arguments
+  <> ") -> Route {\n"
+  <> body
+  <> "\n"
+  <> "}\n\n"
 }
 
 @internal
-pub fn full_snake_name(
-  ancestors: List(ContributionInfo),
-  this: ContributionInfo,
-) {
-  ancestors
-  |> list.map(fn(a) { a.snake_name })
-  |> list.append([this.snake_name])
-  |> string.join("_")
+pub fn add_namespace(
+  namespace: String,
+  items: List(Contribution(types.NotNamespaced)),
+) -> List(Contribution(types.Namespaced)) {
+  list.map(items, fn(item) {
+    let info = item.info
+    let snake_name = justin.snake_case(namespace) <> "_" <> info.name
+    // let name = namespace <> info.name
+
+    let info = ContributionInfo(..info, name: snake_name)
+
+    let children = add_namespace(snake_name, item.children)
+
+    Contribution(..item, info:, children:)
+  })
 }
-// @internal
-// pub fn namespaced_segment_type_and_params(
-//   namespaces: List(String),
-//   acc: List(ContributionInfo),
-//   items: List(ContributionInfo),
-// ) {
-//   case items {
-//     [first, ..rest] -> {
-//       let namespace =
-//         list.append(namespaces, [first.snake_name])
-//         |> string.join("_")
 
-//       let entries =
-//         list.map(first.segment_params, fn(param) {
-//           case param {
-//             types.ParamInt(name) -> types.ParamInt(namespace <> "_" <> name)
-//             types.ParamStr(name) -> types.ParamStr(namespace <> "_" <> name)
-//           }
-//         })
+@internal
+pub fn get_function_arguments(
+  acc: List(types.Param),
+  info: ContributionInfo,
+) -> List(types.Param) {
+  // First we want to namespace the given acc with this info
+  let current_params =
+    acc
+    |> list.map(fn(param) {
+      types.Param(..param, name: info.name <> "_" <> param.name)
+    })
 
-//       let next_acc = list.append(acc, entries)
+  let new_params = info.segment_params
 
-//       namespaced_segment_type_and_params(
-//         list.append(namespaces, [first.snake_name]),
-//         next_acc,
-//         rest,
-//       )
-//     }
-//     _ -> acc
-//   }
-// }
+  let next_acc = list.append(new_params, current_params)
+
+  // info.name
+
+  case info.ancestor {
+    option.None -> next_acc
+    option.Some(ancestor) -> get_function_arguments(next_acc, ancestor)
+  }
+}
+
+fn generate_route_helper_body(acc: List(String), info: ContributionInfo) {
+  let params =
+    info.segment_params
+    |> list.map(fn(param) { justin.snake_case(info.name <> "_" <> param.name) })
+    |> fn(entries) {
+      case list.is_empty(acc) {
+        True -> entries
+        False -> list.append(entries, ["_"])
+      }
+    }
+
+  let params = case list.is_empty(params) {
+    True -> ""
+    False -> "(" <> string.join(params, ", ") <> ")"
+  }
+
+  let new_line = justin.pascal_case(info.name) <> params
+
+  let next_acc = list.append(acc, [new_line])
+
+  case info.ancestor {
+    option.None -> next_acc
+    option.Some(ancestor) -> generate_route_helper_body(next_acc, ancestor)
+  }
+}

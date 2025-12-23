@@ -1,3 +1,5 @@
+import gleam/option
+
 @internal
 pub type InputSegment {
   Lit(val: String)
@@ -18,25 +20,24 @@ pub type ParamKind {
 
 @internal
 pub type Param {
-  Param(name: String, namespace: String, kind: ParamKind)
+  Param(name: String, kind: ParamKind)
 }
 
 @internal
 pub type ContributionInfo {
   ContributionInfo(
-    snake_name: String,
-    ns_snake_name: String,
-    type_name: String,
-    ns_type_name: String,
+    ancestor: option.Option(ContributionInfo),
+    name: String,
     segment_params: List(Param),
   )
 }
 
 @internal
-pub type Contribution {
-  Contribution(
-    ancestors: List(ContributionInfo),
-    children: List(Contribution),
-    info: ContributionInfo,
-  )
+pub type NotNamespaced
+
+pub type Namespaced
+
+@internal
+pub type Contribution(a) {
+  Contribution(children: List(Contribution(a)), info: ContributionInfo)
 }

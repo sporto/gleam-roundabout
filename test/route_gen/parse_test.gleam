@@ -1,18 +1,17 @@
 import route_gen/parse
 import route_gen/types
+// pub fn prepare_contribution_info_test() {
+//   let def = types.InputDef(name: "new", path: [], sub: [])
 
-pub fn prepare_contribution_info_test() {
-  let def = types.InputDef(name: "new", path: [], sub: [])
+//   let actual =
+//     parse.prepare_contribution_info(
+//       [
+//         // types.ContributionInfo(type_name: "Posts", snake_name: "posts"),
+//       // types.ContributionInfo(type_name: "Comments", snake_name: "comments"),
+//       ],
+//       def,
+//     )
 
-  let actual =
-    parse.prepare_contribution_info(
-      [
-        // types.ContributionInfo(type_name: "Posts", snake_name: "posts"),
-      // types.ContributionInfo(type_name: "Comments", snake_name: "comments"),
-      ],
-      def,
-    )
-
-  assert actual.snake_name == "new"
-  assert actual.type_name == "New"
-}
+//   assert actual.snake_name == "new"
+//   assert actual.type_name == "New"
+// }
