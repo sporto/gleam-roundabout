@@ -36,13 +36,13 @@ pub fn generate_type_test() {
 
 pub fn generate_route_helper_test() {
   let contribution =
-    types.Contribution(
+    types.Node(
       children: [],
-      info: types.ContributionInfo(
+      info: types.Info(
         ancestor: option.Some(
-          types.ContributionInfo(
+          types.Info(
             ancestor: option.Some(
-              types.ContributionInfo(
+              types.Info(
                 ancestor: option.None,
                 name: "Clients",
                 segment_params: [

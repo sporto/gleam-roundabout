@@ -4,10 +4,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 import justin
-import route_gen/types.{
-  type Contribution, type ContributionInfo, type InputDef, Contribution,
-  ContributionInfo,
-}
+import route_gen/types.{type Info, type InputDef, type Node, Info, Node}
 
 @internal
 pub fn parse(definitions: List(InputDef)) {
@@ -17,13 +14,9 @@ pub fn parse(definitions: List(InputDef)) {
   ))
 
   let root =
-    types.Contribution(
+    types.Node(
       children: contributions,
-      info: types.ContributionInfo(
-        name: "",
-        ancestor: option.None,
-        segment_params: [],
-      ),
+      info: types.Info(name: "", ancestor: option.None, segment_params: []),
     )
 
   Ok(root)
@@ -31,9 +24,9 @@ pub fn parse(definitions: List(InputDef)) {
 
 @internal
 pub fn prepare_contributions(
-  ancestor: option.Option(ContributionInfo),
+  ancestor: option.Option(Info),
   definitions: List(InputDef),
-) -> Result(List(Contribution), String) {
+) -> Result(List(Node), String) {
   use contributions <- result.try(
     list.try_map(definitions, prepare_contribution(ancestor, _)),
   )
@@ -45,7 +38,7 @@ pub fn prepare_contributions(
   Ok(contributions)
 }
 
-fn assert_no_duplicate_variant_names(contributions: List(Contribution)) {
+fn assert_no_duplicate_variant_names(contributions: List(Node)) {
   let variant_names =
     list.map(contributions, fn(item) { justin.snake_case(item.info.name) })
 
@@ -58,10 +51,7 @@ fn assert_no_duplicate_variant_names(contributions: List(Contribution)) {
 }
 
 @internal
-pub fn prepare_contribution(
-  ancestor: option.Option(ContributionInfo),
-  definition: InputDef,
-) {
+pub fn prepare_contribution(ancestor: option.Option(Info), definition: InputDef) {
   let info = prepare_contribution_info(ancestor, definition)
 
   use children <- result.try(prepare_contributions(
@@ -69,12 +59,12 @@ pub fn prepare_contribution(
     definition.sub,
   ))
 
-  Contribution(info:, children:) |> Ok
+  Node(info:, children:) |> Ok
 }
 
 @internal
 pub fn prepare_contribution_info(
-  ancestor: option.Option(ContributionInfo),
+  ancestor: option.Option(Info),
   definition: InputDef,
 ) {
   // let ns_snake_name =
@@ -101,5 +91,5 @@ pub fn prepare_contribution_info(
       }
     })
 
-  ContributionInfo(ancestor:, name: definition.name, segment_params:)
+  Info(ancestor:, name: definition.name, segment_params:)
 }

@@ -24,15 +24,11 @@ pub type Param {
 }
 
 @internal
-pub type ContributionInfo {
-  ContributionInfo(
-    ancestor: option.Option(ContributionInfo),
-    name: String,
-    segment_params: List(Param),
-  )
+pub type Info {
+  Info(ancestor: option.Option(Info), name: String, segment_params: List(Param))
 }
 
 @internal
-pub type Contribution {
-  Contribution(children: List(Contribution), info: ContributionInfo)
+pub type Node {
+  Node(children: List(Node), info: Info)
 }

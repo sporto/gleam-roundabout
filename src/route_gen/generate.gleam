@@ -4,10 +4,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 import justin
-import route_gen/types.{
-  type Contribution, type ContributionInfo, type InputDef, Contribution,
-  ContributionInfo,
-}
+import route_gen/types.{type Info, type InputDef, type Node, Info, Node}
 
 @internal
 pub fn generate_imports() {
@@ -24,7 +21,7 @@ pub fn generate_imports() {
 /// }
 /// ```
 @internal
-pub fn generate_type(node: Contribution) {
+pub fn generate_type(node: Node) {
   case list.is_empty(node.children) {
     True -> Error(Nil)
     False -> {
@@ -51,7 +48,7 @@ pub fn generate_type(node: Contribution) {
 
 /// Generate
 /// User(user_id: Int, sub: UserRoute)
-fn generate_type_variant(node: Contribution) {
+fn generate_type_variant(node: Node) {
   let type_name = get_type_name(node.info)
 
   let sub = case list.is_empty(node.children) {
@@ -85,7 +82,7 @@ fn generate_type_variant_param(param: types.Param) {
 }
 
 @internal
-pub fn generate_helpers(contributions: List(Contribution)) {
+pub fn generate_helpers(contributions: List(Node)) {
   // Only leaf should be generated
   case list.is_empty(contributions) {
     True -> Error(Nil)
@@ -104,12 +101,12 @@ pub fn generate_helpers(contributions: List(Contribution)) {
   }
 }
 
-fn generate_helpers_for_contributions(contributions: List(Contribution)) {
+fn generate_helpers_for_contributions(contributions: List(Node)) {
   list.map(contributions, generate_helpers_for_contribution)
   |> string.join("")
 }
 
-fn generate_helpers_for_contribution(cont: Contribution) {
+fn generate_helpers_for_contribution(cont: Node) {
   case list.is_empty(cont.children) {
     True -> {
       generate_route_helper(cont)
@@ -120,7 +117,7 @@ fn generate_helpers_for_contribution(cont: Contribution) {
 }
 
 @internal
-pub fn generate_route_helper(cont: Contribution) {
+pub fn generate_route_helper(cont: Node) {
   // let full_path = list.append(cont.ancestors, [cont.info])
 
   let function_name = justin.snake_case(cont.info.name) <> "_route"
@@ -155,25 +152,25 @@ pub fn generate_route_helper(cont: Contribution) {
 // @internal
 // pub fn add_namespace(
 //   namespace: String,
-//   items: List(Contribution),
-// ) -> List(Contribution) {
+//   items: List(Node),
+// ) -> List(Node) {
 //   list.map(items, fn(item) {
 //     let info = item.info
 //     let snake_name = justin.snake_case(namespace) <> "_" <> info.name
 //     // let name = namespace <> info.name
 
-//     let info = ContributionInfo(..info, name: snake_name)
+//     let info = Info(..info, name: snake_name)
 
 //     let children = add_namespace(snake_name, item.children)
 
-//     Contribution(..item, info:, children:)
+//     Node(..item, info:, children:)
 //   })
 // }
 
 @internal
 pub fn get_function_arguments(
   acc: List(types.Param),
-  info: ContributionInfo,
+  info: Info,
 ) -> List(types.Param) {
   // First we want to namespace the given acc with this info
   let current_params =
@@ -196,7 +193,7 @@ pub fn get_function_arguments(
   }
 }
 
-fn generate_route_helper_body(acc: List(String), info: ContributionInfo) {
+fn generate_route_helper_body(acc: List(String), info: Info) {
   let params =
     info.segment_params
     |> list.map(fn(param) { justin.snake_case(info.name <> "_" <> param.name) })
@@ -222,12 +219,12 @@ fn generate_route_helper_body(acc: List(String), info: ContributionInfo) {
   }
 }
 
-fn get_type_name(info: ContributionInfo) -> String {
+fn get_type_name(info: Info) -> String {
   get_type_name_do([], info)
   |> string.join("")
 }
 
-fn get_type_name_do(collected: List(String), info: ContributionInfo) {
+fn get_type_name_do(collected: List(String), info: Info) {
   let next = list.prepend(collected, justin.pascal_case(info.name))
 
   case info.ancestor {
@@ -236,6 +233,6 @@ fn get_type_name_do(collected: List(String), info: ContributionInfo) {
   }
 }
 
-fn get_route_name(info: ContributionInfo) -> String {
+fn get_route_name(info: Info) -> String {
   get_type_name(info) <> "Route"
 }

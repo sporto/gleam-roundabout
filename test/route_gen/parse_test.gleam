@@ -6,8 +6,8 @@ import route_gen/types
 //   let actual =
 //     parse.prepare_contribution_info(
 //       [
-//         // types.ContributionInfo(type_name: "Posts", snake_name: "posts"),
-//       // types.ContributionInfo(type_name: "Comments", snake_name: "comments"),
+//         // types.Info(type_name: "Posts", snake_name: "posts"),
+//       // types.Info(type_name: "Comments", snake_name: "comments"),
 //       ],
 //       def,
 //     )
