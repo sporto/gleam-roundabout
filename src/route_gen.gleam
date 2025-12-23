@@ -48,8 +48,6 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
 
   use root <- result.try(parse.parse(definitions_2))
 
-  // let contributions_namespaced = generate.add_namespace("", contributions)
-
   use definitions <- result.try(prepare_definitions(definitions))
 
   let types =
@@ -57,7 +55,7 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     |> result.unwrap("")
 
   let segments_to_route =
-    generate_segments_and_subs_to_route("", definitions)
+    generate.generate_segments_to_route(root)
     |> result.unwrap("")
 
   let routes_to_path =
@@ -155,128 +153,6 @@ fn assert_no_duplicate_param_names(name, segments) {
     True -> Ok(segments)
     False -> Error("Route " <> name <> " has duplicate parameter names")
   }
-}
-
-fn generate_segments_and_subs_to_route(
-  namespace: String,
-  definitions: List(ValidRouteDef),
-) {
-  case list.is_empty(definitions) {
-    True -> Error(Nil)
-    False -> {
-      let sub_types =
-        list.filter_map(definitions, fn(def) {
-          generate_segments_and_subs_to_route(namespace <> def.name, def.sub)
-        })
-        |> string.join("\n")
-
-      let out =
-        generate_segments_to_route(namespace, definitions)
-        <> "\n\n"
-        <> sub_types
-
-      Ok(out)
-    }
-  }
-}
-
-fn generate_segments_to_route(
-  namespace: String,
-  definitions: List(ValidRouteDef),
-) {
-  let segments_to_route_cases =
-    definitions
-    |> list.map(generate_segments_to_route_case(namespace, _))
-    |> string.join("\n")
-
-  let fn_name = case namespace {
-    "" -> "segments_to_route"
-    _ -> justin.camel_case(namespace) <> "_segments_to_route"
-  }
-
-  string.trim(
-    "pub fn "
-    <> fn_name
-    <> "(segments: List(String)) -> Result("
-    <> namespace
-    <> "Route, Nil) {\n"
-    <> "  case segments {\n"
-    <> segments_to_route_cases
-    <> "\n    _ -> Error(Nil)\n"
-    <> "  }\n"
-    <> "}",
-  )
-}
-
-fn generate_segments_to_route_case(namespace: String, def: ValidRouteDef) {
-  let matched_params =
-    def.segments
-    |> list.map(fn(seg) {
-      case seg {
-        ValidLit(val) -> "\"" <> val <> "\""
-        ValidStr(name) -> name
-        ValidInt(name) -> name
-      }
-    })
-    |> string.join(", ")
-
-  let matched_params = case list.is_empty(def.sub) {
-    True -> matched_params
-    False -> matched_params <> ", ..rest"
-  }
-
-  let left = "[" <> matched_params <> "]"
-
-  let match_right_inner =
-    def.segments
-    |> list.filter_map(fn(seg) {
-      case seg {
-        ValidLit(_) -> Error(Nil)
-        ValidStr(name) -> Ok(name)
-        ValidInt(name) -> Ok(name)
-      }
-    })
-    |> fn(params) {
-      case list.is_empty(def.sub) {
-        True -> params
-        False -> list.append(params, ["sub"])
-      }
-    }
-    |> string.join(", ")
-
-  let match_right_inner = case match_right_inner {
-    "" -> ""
-    match_right_inner -> {
-      "(" <> match_right_inner <> ")"
-    }
-  }
-
-  let right = case list.is_empty(def.sub) {
-    True -> {
-      namespace <> def.name <> match_right_inner <> " |> Ok"
-    }
-    False -> {
-      let fn_name =
-        justin.snake_case(namespace <> def.name <> "_segments_to_route")
-
-      fn_name <> "(rest) |> result.map(fn(sub) {
-" <> namespace <> def.name <> match_right_inner <> "
-        })"
-    }
-  }
-
-  let right =
-    list.fold(def.segments, right, fn(acc, segment) {
-      case segment {
-        ValidLit(_) -> acc
-        ValidStr(_) -> acc
-        ValidInt(name) -> {
-          "with_int(" <> name <> ", fn(" <> name <> ") { " <> acc <> " })"
-        }
-      }
-    })
-
-  indent <> indent <> left <> " -> " <> right
 }
 
 fn generate_route_and_subs_to_path(

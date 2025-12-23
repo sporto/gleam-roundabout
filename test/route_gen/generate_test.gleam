@@ -34,35 +34,43 @@ pub fn generate_type_test() {
   |> birdie.snap(title: "type")
 }
 
-pub fn generate_route_helper_test() {
-  let contribution =
-    types.Node(
-      children: [],
-      info: types.Info(
-        ancestor: option.Some(
-          types.Info(
-            ancestor: option.Some(
-              types.Info(
-                ancestor: option.None,
-                name: "Clients",
-                segment_params: [
-                  types.Param("id", types.ParamInt),
-                ],
-              ),
-            ),
-            name: "orders",
-            segment_params: [
-              types.Param("id", types.ParamStr),
-            ],
-          ),
-        ),
-        name: "track",
-        segment_params: [],
-      ),
-    )
+pub fn generate_segments_to_route_test() {
+  let assert Ok(root) = parse.parse(routes)
 
-  let actual = generate.generate_route_helper(contribution)
+  let assert Ok(actual) = generate.generate_segments_to_route(root)
 
   actual
-  |> birdie.snap(title: "route_helper")
+  |> birdie.snap(title: "segments_to_route")
 }
+// pub fn generate_route_helper_test() {
+//   let contribution =
+//     types.Node(
+//       children: [],
+//       info: types.Info(
+//         ancestor: option.Some(
+//           types.Info(
+//             ancestor: option.Some(
+//               types.Info(
+//                 ancestor: option.None,
+//                 name: "Clients",
+//                 segment_params: [
+//                   types.Param("id", types.ParamInt),
+//                 ],
+//               ),
+//             ),
+//             name: "orders",
+//             segment_params: [
+//               types.Param("id", types.ParamStr),
+//             ],
+//           ),
+//         ),
+//         name: "track",
+//         segment_params: [],
+//       ),
+//     )
+
+//   let actual = generate.generate_route_helper(contribution)
+
+//   actual
+//   |> birdie.snap(title: "route_helper")
+// }

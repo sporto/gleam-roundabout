@@ -6,6 +6,8 @@ import gleam/string
 import justin
 import route_gen/types.{type Info, type InputDef, type Node, Info, Node}
 
+const indent = "  "
+
 @internal
 pub fn generate_imports() {
   ["import gleam/int", "import gleam/result"]
@@ -30,24 +32,28 @@ pub fn generate_type(node: Node) {
         |> list.filter_map(fn(node) { generate_type(node) })
         |> string.join("\n")
 
-      let variants =
-        node.children
-        |> list.map(generate_type_variant)
-        |> string.join("\n")
-
-      let route_name = get_route_name(node.info)
-
-      let this = "pub type " <> route_name <> " {\n" <> variants <> "\n}\n\n"
-
-      let out = this <> sub_types
+      let out = generate_type_just_this(node) <> sub_types
 
       Ok(out)
     }
   }
 }
 
+fn generate_type_just_this(node: Node) {
+  let variants =
+    node.children
+    |> list.map(generate_type_variant)
+    |> string.join("\n")
+
+  let route_name = get_route_name(node.info)
+
+  "pub type " <> route_name <> " {\n" <> variants <> "\n}\n\n"
+}
+
 /// Generate
-/// User(user_id: Int, sub: UserRoute)
+/// ```
+///   User(user_id: Int, sub: UserRoute)
+/// ```
 fn generate_type_variant(node: Node) {
   let type_name = get_type_name(node.info)
 
@@ -79,6 +85,119 @@ fn generate_type_variant_param(param: types.Param) {
     types.ParamInt -> Ok(justin.snake_case(param.name) <> ": Int")
     types.ParamStr -> Ok(justin.snake_case(param.name) <> ": String")
   }
+}
+
+@internal
+pub fn generate_segments_to_route(node: Node) {
+  case list.is_empty(node.children) {
+    True -> Error(Nil)
+    False -> {
+      let sub_types =
+        list.filter_map(node.children, fn(sub) {
+          generate_segments_to_route(sub)
+        })
+        |> string.join("")
+
+      let out = generate_segments_to_route_just_this(node) <> sub_types
+
+      Ok(out)
+    }
+  }
+}
+
+fn generate_segments_to_route_just_this(node: Node) {
+  let segments_to_route_cases =
+    node.children
+    |> list.map(generate_segments_to_route_case)
+    |> string.join("\n")
+
+  let function_name =
+    [get_function_name(node.info), "segments_to_route"]
+    |> list.filter(fn(name) { !string.is_empty(name) })
+    |> string.join("_")
+
+  let type_name = get_type_name(node.info)
+
+  "pub fn "
+  <> function_name
+  <> "(segments: List(String)) -> Result("
+  <> type_name
+  <> "Route, Nil) {\n"
+  <> "  case segments {\n"
+  <> segments_to_route_cases
+  <> "\n    _ -> Error(Nil)\n"
+  <> "  }\n"
+  <> "}\n\n"
+}
+
+fn generate_segments_to_route_case(node: Node) {
+  let matched_params =
+    node.info.segments
+    |> list.map(fn(param) {
+      case param {
+        types.Lit(val) -> "\"" <> val <> "\""
+        types.Str(name) -> name
+        types.Int(name) -> name
+      }
+    })
+    |> string.join(", ")
+
+  let matched_params = case list.is_empty(node.children) {
+    True -> matched_params
+    False -> matched_params <> ", ..rest"
+  }
+
+  let left = "[" <> matched_params <> "]"
+
+  let match_right_inner =
+    node.info.segments
+    |> list.filter_map(fn(seg) {
+      case seg {
+        types.Lit(_) -> Error(Nil)
+        types.Str(name) -> Ok(name)
+        types.Int(name) -> Ok(name)
+      }
+    })
+    |> fn(params) {
+      case list.is_empty(node.children) {
+        True -> params
+        False -> list.append(params, ["sub"])
+      }
+    }
+    |> string.join(", ")
+
+  let match_right_inner = case match_right_inner {
+    "" -> ""
+    match_right_inner -> {
+      "(" <> match_right_inner <> ")"
+    }
+  }
+
+  let right = case list.is_empty(node.children) {
+    True -> {
+      get_type_name(node.info) <> match_right_inner <> " |> Ok"
+    }
+    False -> {
+      let fn_name = get_function_name(node.info) <> "_segments_to_route"
+
+      fn_name <> "(rest) |> result.map(fn(sub) {
+" <> get_type_name(node.info) <> match_right_inner <> "
+        })"
+    }
+  }
+
+  let right =
+    list.fold(node.info.segments, right, fn(acc, segment) {
+      case segment {
+        types.Lit(_) -> acc
+        types.Str(_) -> acc
+        types.Int(name) -> {
+          "with_int(" <> name <> ", fn(" <> name <> ") { " <> acc <> " })"
+        }
+      }
+    })
+
+  indent <> indent <> left <> " -> " <> right
 }
 
 @internal
@@ -216,6 +335,20 @@ fn generate_route_helper_body(acc: List(String), info: Info) {
   case info.ancestor {
     option.None -> next_acc
     option.Some(ancestor) -> generate_route_helper_body(next_acc, ancestor)
+  }
+}
+
+fn get_function_name(info: Info) -> String {
+  get_function_name_do([], info)
+  |> string.join("_")
+}
+
+fn get_function_name_do(collected: List(String), info: Info) {
+  let next = list.prepend(collected, justin.snake_case(info.name))
+
+  case info.ancestor {
+    option.None -> next
+    option.Some(ancestor) -> get_function_name_do(next, ancestor)
   }
 }
 

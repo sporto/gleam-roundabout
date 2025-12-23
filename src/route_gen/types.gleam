@@ -25,7 +25,12 @@ pub type Param {
 
 @internal
 pub type Info {
-  Info(ancestor: option.Option(Info), name: String, segment_params: List(Param))
+  Info(
+    ancestor: option.Option(Info),
+    name: String,
+    segment_params: List(Param),
+    segments: List(InputSegment),
+  )
 }
 
 @internal

@@ -16,7 +16,12 @@ pub fn parse(definitions: List(InputDef)) {
   let root =
     types.Node(
       children: contributions,
-      info: types.Info(name: "", ancestor: option.None, segment_params: []),
+      info: types.Info(
+        name: "",
+        ancestor: option.None,
+        segment_params: [],
+        segments: [],
+      ),
     )
 
   Ok(root)
@@ -91,5 +96,10 @@ pub fn prepare_contribution_info(
       }
     })
 
-  Info(ancestor:, name: definition.name, segment_params:)
+  Info(
+    ancestor:,
+    name: definition.name,
+    segment_params:,
+    segments: definition.path,
+  )
 }
