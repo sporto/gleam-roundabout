@@ -46,12 +46,14 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     definitions_2,
   ))
 
-  let contributions_namespaced = generate.add_namespace("", contributions)
+  use root <- result.try(parse.parse(definitions_2))
+
+  // let contributions_namespaced = generate.add_namespace("", contributions)
 
   use definitions <- result.try(prepare_definitions(definitions))
 
   let types =
-    generate_type_and_subtypes("", definitions)
+    generate.generate_type(root)
     |> result.unwrap("")
 
   let segments_to_route =
@@ -63,11 +65,11 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     |> result.unwrap("")
 
   let helpers =
-    generate.generate_helpers(contributions_namespaced)
+    generate.generate_helpers(contributions)
     |> result.unwrap("")
 
   let generated_code =
-    generate_imports()
+    generate.generate_imports()
     <> types
     <> segments_to_route
     <> routes_to_path
@@ -152,63 +154,6 @@ fn assert_no_duplicate_param_names(name, segments) {
   case list.length(segment_names) == set.size(as_set) {
     True -> Ok(segments)
     False -> Error("Route " <> name <> " has duplicate parameter names")
-  }
-}
-
-fn generate_imports() {
-  ["import gleam/int", "import gleam/result"]
-  |> string.join("\n")
-  <> "\n\n"
-}
-
-fn generate_type_and_subtypes(
-  namespace: String,
-  definitions: List(ValidRouteDef),
-) {
-  case list.is_empty(definitions) {
-    True -> Error(Nil)
-    False -> {
-      let sub_types =
-        list.filter_map(definitions, fn(def) {
-          generate_type_and_subtypes(def.name, def.sub)
-        })
-        |> string.join("\n")
-
-      let out = generate_type(namespace, definitions) <> "\n\n" <> sub_types
-
-      Ok(out)
-    }
-  }
-}
-
-fn generate_type(namespace: String, definitions: List(ValidRouteDef)) {
-  let variants =
-    definitions
-    |> list.map(generate_type_variant(namespace, _))
-    |> string.join("\n")
-
-  "pub type " <> namespace <> "Route {\n" <> variants <> "\n}"
-}
-
-fn generate_type_variant(namespace: String, def: ValidRouteDef) {
-  let params =
-    def.segments
-    |> list.filter_map(generate_type_variant_param)
-    |> string.join(", ")
-
-  let sub = case list.is_empty(def.sub) {
-    True -> ""
-    False -> ", sub: " <> namespace <> def.name <> "Route"
-  }
-
-  "  " <> namespace <> def.name <> "(" <> params <> sub <> ")"
-}
-
-fn generate_type_variant_param(segment: ValidSegment) {
-  case segment {
-    ValidInt(name) -> Ok(name <> ": Int")
-    ValidLit(_) -> Error(Nil)
-    ValidStr(name) -> Ok(name <> ": String")
   }
 }
 

@@ -10,7 +10,82 @@ import route_gen/types.{
 }
 
 @internal
-pub fn generate_helpers(contributions: List(Contribution(types.Namespaced))) {
+pub fn generate_imports() {
+  ["import gleam/int", "import gleam/result"]
+  |> string.join("\n")
+  <> "\n\n"
+}
+
+/// Generates:
+/// ```
+/// pub type Route {
+///   Home
+///   Client(client_id: Int, sub: ClientRoute)
+/// }
+/// ```
+@internal
+pub fn generate_type(node: Contribution) {
+  case list.is_empty(node.children) {
+    True -> Error(Nil)
+    False -> {
+      let sub_types =
+        node.children
+        |> list.filter_map(fn(node) { generate_type(node) })
+        |> string.join("\n")
+
+      let variants =
+        node.children
+        |> list.map(generate_type_variant)
+        |> string.join("\n")
+
+      let route_name = get_route_name(node.info)
+
+      let this = "pub type " <> route_name <> " {\n" <> variants <> "\n}\n\n"
+
+      let out = this <> sub_types
+
+      Ok(out)
+    }
+  }
+}
+
+/// Generate
+/// User(user_id: Int, sub: UserRoute)
+fn generate_type_variant(node: Contribution) {
+  let type_name = get_type_name(node.info)
+
+  let sub = case list.is_empty(node.children) {
+    True -> option.None
+    False -> option.Some("sub: " <> get_route_name(node.info))
+  }
+
+  let params =
+    node.info.segment_params
+    |> list.filter_map(generate_type_variant_param)
+    |> fn(items) {
+      case sub {
+        option.None -> items
+        option.Some(sub) -> list.append(items, [sub])
+      }
+    }
+
+  let params = case list.is_empty(params) {
+    True -> ""
+    False -> "(" <> string.join(params, ", ") <> ")"
+  }
+
+  "  " <> type_name <> params
+}
+
+fn generate_type_variant_param(param: types.Param) {
+  case param.kind {
+    types.ParamInt -> Ok(justin.snake_case(param.name) <> ": Int")
+    types.ParamStr -> Ok(justin.snake_case(param.name) <> ": String")
+  }
+}
+
+@internal
+pub fn generate_helpers(contributions: List(Contribution)) {
   // Only leaf should be generated
   case list.is_empty(contributions) {
     True -> Error(Nil)
@@ -29,14 +104,12 @@ pub fn generate_helpers(contributions: List(Contribution(types.Namespaced))) {
   }
 }
 
-fn generate_helpers_for_contributions(
-  contributions: List(Contribution(types.Namespaced)),
-) {
+fn generate_helpers_for_contributions(contributions: List(Contribution)) {
   list.map(contributions, generate_helpers_for_contribution)
   |> string.join("")
 }
 
-fn generate_helpers_for_contribution(cont: Contribution(types.Namespaced)) {
+fn generate_helpers_for_contribution(cont: Contribution) {
   case list.is_empty(cont.children) {
     True -> {
       generate_route_helper(cont)
@@ -47,7 +120,7 @@ fn generate_helpers_for_contribution(cont: Contribution(types.Namespaced)) {
 }
 
 @internal
-pub fn generate_route_helper(cont: Contribution(types.Namespaced)) {
+pub fn generate_route_helper(cont: Contribution) {
   // let full_path = list.append(cont.ancestors, [cont.info])
 
   let function_name = justin.snake_case(cont.info.name) <> "_route"
@@ -64,20 +137,6 @@ pub fn generate_route_helper(cont: Contribution(types.Namespaced)) {
     })
     |> string.join(", ")
 
-  // full_path
-  // |> list.flat_map(fn(cont) {
-  //   cont.segment_params
-  //   |> list.map(fn(param) {
-  //     let type_ = case param.kind {
-  //       types.ParamInt -> "Int"
-  //       types.ParamStr -> "String"
-  //     }
-
-  //     justin.snake_case(cont.name <> "_" <> param.name) <> ": " <> type_
-  //   })
-  // })
-  // |> string.join(", ")
-
   let body =
     "  "
     <> generate_route_helper_body([], cont.info)
@@ -93,23 +152,23 @@ pub fn generate_route_helper(cont: Contribution(types.Namespaced)) {
   <> "}\n\n"
 }
 
-@internal
-pub fn add_namespace(
-  namespace: String,
-  items: List(Contribution(types.NotNamespaced)),
-) -> List(Contribution(types.Namespaced)) {
-  list.map(items, fn(item) {
-    let info = item.info
-    let snake_name = justin.snake_case(namespace) <> "_" <> info.name
-    // let name = namespace <> info.name
+// @internal
+// pub fn add_namespace(
+//   namespace: String,
+//   items: List(Contribution),
+// ) -> List(Contribution) {
+//   list.map(items, fn(item) {
+//     let info = item.info
+//     let snake_name = justin.snake_case(namespace) <> "_" <> info.name
+//     // let name = namespace <> info.name
 
-    let info = ContributionInfo(..info, name: snake_name)
+//     let info = ContributionInfo(..info, name: snake_name)
 
-    let children = add_namespace(snake_name, item.children)
+//     let children = add_namespace(snake_name, item.children)
 
-    Contribution(..item, info:, children:)
-  })
-}
+//     Contribution(..item, info:, children:)
+//   })
+// }
 
 @internal
 pub fn get_function_arguments(
@@ -123,11 +182,13 @@ pub fn get_function_arguments(
       types.Param(..param, name: info.name <> "_" <> param.name)
     })
 
-  let new_params = info.segment_params
+  let new_params =
+    info.segment_params
+    |> list.map(fn(param) {
+      types.Param(..param, name: info.name <> "_" <> param.name)
+    })
 
   let next_acc = list.append(new_params, current_params)
-
-  // info.name
 
   case info.ancestor {
     option.None -> next_acc
@@ -151,7 +212,7 @@ fn generate_route_helper_body(acc: List(String), info: ContributionInfo) {
     False -> "(" <> string.join(params, ", ") <> ")"
   }
 
-  let new_line = justin.pascal_case(info.name) <> params
+  let new_line = get_type_name(info) <> params
 
   let next_acc = list.append(acc, [new_line])
 
@@ -159,4 +220,22 @@ fn generate_route_helper_body(acc: List(String), info: ContributionInfo) {
     option.None -> next_acc
     option.Some(ancestor) -> generate_route_helper_body(next_acc, ancestor)
   }
+}
+
+fn get_type_name(info: ContributionInfo) -> String {
+  get_type_name_do([], info)
+  |> string.join("")
+}
+
+fn get_type_name_do(collected: List(String), info: ContributionInfo) {
+  let next = list.prepend(collected, justin.pascal_case(info.name))
+
+  case info.ancestor {
+    option.None -> next
+    option.Some(ancestor) -> get_type_name_do(next, ancestor)
+  }
+}
+
+fn get_route_name(info: ContributionInfo) -> String {
+  get_type_name(info) <> "Route"
 }

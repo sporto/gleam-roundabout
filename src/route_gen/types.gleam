@@ -33,11 +33,6 @@ pub type ContributionInfo {
 }
 
 @internal
-pub type NotNamespaced
-
-pub type Namespaced
-
-@internal
-pub type Contribution(a) {
-  Contribution(children: List(Contribution(a)), info: ContributionInfo)
+pub type Contribution {
+  Contribution(children: List(Contribution), info: ContributionInfo)
 }

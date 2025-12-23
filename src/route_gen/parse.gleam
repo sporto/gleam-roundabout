@@ -10,10 +10,30 @@ import route_gen/types.{
 }
 
 @internal
+pub fn parse(definitions: List(InputDef)) {
+  use contributions <- result.try(prepare_contributions(
+    option.None,
+    definitions,
+  ))
+
+  let root =
+    types.Contribution(
+      children: contributions,
+      info: types.ContributionInfo(
+        name: "",
+        ancestor: option.None,
+        segment_params: [],
+      ),
+    )
+
+  Ok(root)
+}
+
+@internal
 pub fn prepare_contributions(
   ancestor: option.Option(ContributionInfo),
   definitions: List(InputDef),
-) -> Result(List(Contribution(types.NotNamespaced)), String) {
+) -> Result(List(Contribution), String) {
   use contributions <- result.try(
     list.try_map(definitions, prepare_contribution(ancestor, _)),
   )
@@ -25,9 +45,7 @@ pub fn prepare_contributions(
   Ok(contributions)
 }
 
-fn assert_no_duplicate_variant_names(
-  contributions: List(Contribution(types.NotNamespaced)),
-) {
+fn assert_no_duplicate_variant_names(contributions: List(Contribution)) {
   let variant_names =
     list.map(contributions, fn(item) { justin.snake_case(item.info.name) })
 
