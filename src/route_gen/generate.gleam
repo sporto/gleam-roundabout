@@ -131,7 +131,8 @@ pub fn generate_segments_to_route_rec(ancestors: List(Info), node: Node) {
   }
 }
 
-fn generate_segments_to_route(ancestors: List(Info), node: Node) {
+@internal
+pub fn generate_segments_to_route(ancestors: List(Info), node: Node) {
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let segments_to_route_cases =
@@ -254,7 +255,8 @@ pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) {
   }
 }
 
-fn generate_route_to_path(ancestors: List(Info), node: Node) -> String {
+@internal
+pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> String {
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let route_to_path_cases =

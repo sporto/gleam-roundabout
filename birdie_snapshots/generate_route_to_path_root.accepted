@@ -1,0 +1,15 @@
+---
+version: 1.5.2
+title: generate_route_to_path_root
+file: ./test/route_gen/generate_test.gleam
+test_name: generate_route_to_path_root_test
+---
+pub fn route_to_path(route: Route) -> String {
+  case route {
+    Home -> "/"
+    Clients -> "/" <> "clients/"
+    Client(client_id, sub) -> "/" <> "clients/" <> int.to_string(client_id) <> client_route_to_path(sub)
+  }
+}
+
+

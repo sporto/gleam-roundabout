@@ -50,6 +50,8 @@ pub fn get_function_name_test() {
   assert actual == "client_simple_user"
 }
 
+/// generate_type
+///
 pub fn generate_type_root_test() {
   let assert Ok(root) = route_gen.parse(routes)
 
@@ -85,6 +87,17 @@ pub fn generate_type_rec_test() {
   |> birdie.snap(title: "generate_type_rec")
 }
 
+/// generate_segments_to_route
+///
+pub fn generate_segments_to_route_root_test() {
+  let assert Ok(root) = route_gen.parse(routes)
+
+  let actual = generate.generate_segments_to_route([], root)
+
+  actual
+  |> birdie.snap(title: "generate_segments_to_route_root")
+}
+
 pub fn generate_segments_to_route_rec_test() {
   let assert Ok(root) = route_gen.parse(routes)
 
@@ -92,6 +105,17 @@ pub fn generate_segments_to_route_rec_test() {
 
   actual
   |> birdie.snap(title: "generate_segments_to_route_rec")
+}
+
+/// generate_route_to_path
+///
+pub fn generate_route_to_path_root_test() {
+  let assert Ok(root) = route_gen.parse(routes)
+
+  let actual = generate.generate_route_to_path([], root)
+
+  actual
+  |> birdie.snap(title: "generate_route_to_path_root")
 }
 
 pub fn generate_route_to_path_rec_test() {
