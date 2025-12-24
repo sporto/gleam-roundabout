@@ -1,6 +1,4 @@
 import birdie
-import gleam/option
-import gleam/result
 import route_gen/generate
 import route_gen/parse
 import route_gen/types
@@ -51,35 +49,12 @@ pub fn generate_route_to_path_test() {
   actual
   |> birdie.snap(title: "generate_route_to_path")
 }
-// pub fn generate_route_helper_test() {
-//   let contribution =
-//     types.Node(
-//       children: [],
-//       info: types.Info(
-//         ancestor: option.Some(
-//           types.Info(
-//             ancestor: option.Some(
-//               types.Info(
-//                 ancestor: option.None,
-//                 name: "Clients",
-//                 segment_params: [
-//                   types.Param("id", types.ParamInt),
-//                 ],
-//               ),
-//             ),
-//             name: "orders",
-//             segment_params: [
-//               types.Param("id", types.ParamStr),
-//             ],
-//           ),
-//         ),
-//         name: "track",
-//         segment_params: [],
-//       ),
-//     )
 
-//   let actual = generate.generate_route_helper(contribution)
+pub fn generate_helpers_test() {
+  let assert Ok(root) = parse.parse(routes)
 
-//   actual
-//   |> birdie.snap(title: "route_helper")
-// }
+  let actual = generate.generate_helpers(root)
+
+  actual
+  |> birdie.snap(title: "generate_helpers")
+}

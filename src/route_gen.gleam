@@ -62,9 +62,7 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
     generate.generate_route_to_path(root)
     |> result.unwrap("")
 
-  let helpers =
-    generate.generate_helpers(contributions)
-    |> result.unwrap("")
+  let helpers = generate.generate_helpers(root)
 
   let utils = generate.generate_utils()
 

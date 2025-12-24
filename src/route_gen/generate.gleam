@@ -294,45 +294,25 @@ fn generate_route_to_path_case(node: Node) {
 }
 
 @internal
-pub fn generate_helpers(contributions: List(Node)) {
-  // Only leaf should be generated
-  case list.is_empty(contributions) {
-    True -> Error(Nil)
-    False -> {
-      let sub_types =
-        list.filter_map(contributions, fn(contribution) {
-          generate_helpers(contribution.children)
-        })
-        |> string.join("\n")
-
-      let out =
-        generate_helpers_for_contributions(contributions) <> "\n\n" <> sub_types
-
-      Ok(out)
-    }
-  }
-}
-
-fn generate_helpers_for_contributions(contributions: List(Node)) {
-  list.map(contributions, generate_helpers_for_contribution)
-  |> string.join("")
-}
-
-fn generate_helpers_for_contribution(cont: Node) {
-  case list.is_empty(cont.children) {
+pub fn generate_helpers(node: Node) {
+  // Only leaf nodes are generated
+  case list.is_empty(node.children) {
     True -> {
-      generate_route_helper(cont)
+      generate_helpers_just_this(node)
     }
-    False -> ""
+    False -> {
+      list.map(node.children, fn(node) { generate_helpers(node) })
+      |> string.join("")
+    }
   }
-  // "pub fn _path("
 }
 
-@internal
-pub fn generate_route_helper(cont: Node) {
-  // let full_path = list.append(cont.ancestors, [cont.info])
+fn generate_helpers_just_this(node: Node) {
+  generate_route_helper(node)
+}
 
-  let function_name = justin.snake_case(cont.info.name) <> "_route"
+fn generate_route_helper(cont: Node) {
+  let function_name = get_function_name(cont.info) <> "_route"
 
   let function_arguments =
     get_function_arguments([], cont.info)
