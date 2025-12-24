@@ -1,7 +1,6 @@
 import gleam/list
 import gleam/option
 import gleam/result
-import gleam/set
 import gleam/string
 import justin
 import route_gen/types.{type Info, type InputDef, type Node, Info, Node}
@@ -25,15 +24,15 @@ pub fn generate_imports() {
 /// }
 /// ```
 @internal
-pub fn generate_type(ancestors: List(Node), node: Node) {
+pub fn generate_type(ancestors: List(Info), node: Node) {
   case list.is_empty(node.children) {
     True -> Error(Nil)
     False -> {
-      let sub_type_ancestors = list.prepend(ancestors, node)
+      let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
         node.children
-        |> list.filter_map(fn(node) { generate_type(sub_type_ancestors, node) })
+        |> list.filter_map(fn(node) { generate_type(next_ancestors, node) })
         |> string.join("")
 
       let out = generate_type_just_this(ancestors, node) <> sub_types
@@ -43,13 +42,15 @@ pub fn generate_type(ancestors: List(Node), node: Node) {
   }
 }
 
-fn generate_type_just_this(ancestors: List(Node), node: Node) {
+fn generate_type_just_this(ancestors: List(Info), node: Node) {
+  let next_ancestors = list.prepend(ancestors, node.info)
+
   let variants =
     node.children
-    |> list.map(generate_type_variant(ancestors, _))
+    |> list.map(generate_type_variant(next_ancestors, _))
     |> string.join("\n")
 
-  let route_name = get_route_name_v2(ancestors, node.info)
+  let route_name = get_route_name(ancestors, node.info)
 
   "pub type " <> route_name <> " {\n" <> variants <> "\n}" <> block_break
 }
@@ -58,12 +59,12 @@ fn generate_type_just_this(ancestors: List(Node), node: Node) {
 /// ```
 ///   User(user_id: Int, sub: UserRoute)
 /// ```
-fn generate_type_variant(ancestors: List(Node), node: Node) {
-  let type_name = get_type_name_v2(ancestors, node.info)
+fn generate_type_variant(ancestors: List(Info), node: Node) {
+  let type_name = get_type_name(ancestors, node.info)
 
   let sub = case list.is_empty(node.children) {
     True -> option.None
-    False -> option.Some("sub: " <> get_route_name_v2(ancestors, node.info))
+    False -> option.Some("sub: " <> get_route_name(ancestors, node.info))
   }
 
   let params =
@@ -93,15 +94,15 @@ fn generate_type_variant_param(segment: types.Segment) {
 }
 
 @internal
-pub fn generate_segments_to_route(ancestors: List(Node), node: Node) {
+pub fn generate_segments_to_route(ancestors: List(Info), node: Node) {
   case list.is_empty(node.children) {
     True -> Error(Nil)
     False -> {
-      let sub_type_ancestors = list.prepend(ancestors, node)
+      let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
         list.filter_map(node.children, fn(sub) {
-          generate_segments_to_route(sub_type_ancestors, sub)
+          generate_segments_to_route(next_ancestors, sub)
         })
         |> string.join("")
 
@@ -113,18 +114,20 @@ pub fn generate_segments_to_route(ancestors: List(Node), node: Node) {
   }
 }
 
-fn generate_segments_to_route_just_this(ancestors: List(Node), node: Node) {
+fn generate_segments_to_route_just_this(ancestors: List(Info), node: Node) {
+  let next_ancestors = list.prepend(ancestors, node.info)
+
   let segments_to_route_cases =
     node.children
-    |> list.map(generate_segments_to_route_case(ancestors, _))
+    |> list.map(generate_segments_to_route_case(next_ancestors, _))
     |> string.join("\n")
 
   let function_name =
-    [get_function_name_v2(ancestors, node.info), "segments_to_route"]
+    [get_function_name(ancestors, node.info), "segments_to_route"]
     |> list.filter(fn(name) { !string.is_empty(name) })
     |> string.join("_")
 
-  let type_name = get_type_name_v2(ancestors, node.info)
+  let type_name = get_type_name(ancestors, node.info)
 
   "pub fn "
   <> function_name
@@ -139,7 +142,7 @@ fn generate_segments_to_route_just_this(ancestors: List(Node), node: Node) {
   <> block_break
 }
 
-fn generate_segments_to_route_case(ancestors: List(Node), node: Node) {
+fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
   let matched_params =
     node.info.segments
     |> list.map(fn(segment) {
@@ -184,14 +187,14 @@ fn generate_segments_to_route_case(ancestors: List(Node), node: Node) {
 
   let right = case list.is_empty(node.children) {
     True -> {
-      get_type_name_v2(ancestors, node.info) <> match_right_inner <> " |> Ok"
+      get_type_name(ancestors, node.info) <> match_right_inner <> " |> Ok"
     }
     False -> {
       let fn_name =
-        get_function_name_v2(ancestors, node.info) <> "_segments_to_route"
+        get_function_name(ancestors, node.info) <> "_segments_to_route"
 
       fn_name <> "(rest) |> result.map(fn(sub) {
-" <> get_type_name_v2(ancestors, node.info) <> match_right_inner <> "
+" <> get_type_name(ancestors, node.info) <> match_right_inner <> "
         })"
     }
   }
@@ -211,15 +214,15 @@ fn generate_segments_to_route_case(ancestors: List(Node), node: Node) {
 }
 
 @internal
-pub fn generate_route_to_path(ancestors: List(Node), node: Node) {
+pub fn generate_route_to_path(ancestors: List(Info), node: Node) {
   case list.is_empty(node.children) {
     True -> Error(Nil)
     False -> {
-      let sub_type_ancestors = list.prepend(ancestors, node)
+      let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
         list.filter_map(node.children, fn(node) {
-          generate_route_to_path(sub_type_ancestors, node)
+          generate_route_to_path(next_ancestors, node)
         })
         |> string.join("\n")
 
@@ -228,21 +231,23 @@ pub fn generate_route_to_path(ancestors: List(Node), node: Node) {
   }
 }
 
-fn generate_route_to_path_just_this(ancestors: List(Node), node: Node) -> String {
+fn generate_route_to_path_just_this(ancestors: List(Info), node: Node) -> String {
+  let next_ancestors = list.prepend(ancestors, node.info)
+
   let route_to_path_cases =
     node.children
-    |> list.map(generate_route_to_path_case(ancestors, _))
+    |> list.map(generate_route_to_path_case(next_ancestors, _))
     |> string.join("\n")
 
   let function_name =
-    [get_function_name_v2(ancestors, node.info), "route_to_path"]
+    [get_function_name(ancestors, node.info), "route_to_path"]
     |> list.filter(fn(name) { !string.is_empty(name) })
     |> string.join("_")
 
   "pub fn "
   <> function_name
   <> "(route: "
-  <> get_type_name_v2(ancestors, node.info)
+  <> get_type_name(ancestors, node.info)
   <> "Route) -> String {\n"
   <> indent
   <> "case route {\n"
@@ -252,7 +257,7 @@ fn generate_route_to_path_just_this(ancestors: List(Node), node: Node) -> String
   <> block_break
 }
 
-fn generate_route_to_path_case(ancestors: List(Node), node: Node) {
+fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
   let variant_params =
     node.info.segments
     |> list.filter_map(fn(seg) {
@@ -290,7 +295,7 @@ fn generate_route_to_path_case(ancestors: List(Node), node: Node) {
     False ->
       path
       <> " <> "
-      <> get_function_name_v2(ancestors, node.info)
+      <> get_function_name(ancestors, node.info)
       <> "_route_to_path(sub)"
   }
 
@@ -301,34 +306,36 @@ fn generate_route_to_path_case(ancestors: List(Node), node: Node) {
 
   indent
   <> indent
-  <> get_type_name_v2(ancestors, node.info)
+  <> get_type_name(ancestors, node.info)
   <> variant_params_str
   <> " -> "
   <> path
 }
 
 @internal
-pub fn generate_helpers(ancestors: List(Node), node: Node) {
+pub fn generate_helpers(ancestors: List(Info), node: Node) {
   // Only leaf nodes are generated
   case list.is_empty(node.children) {
     True -> {
       generate_helpers_just_this(ancestors, node)
     }
     False -> {
-      let sub_ancestors = list.prepend(ancestors, node)
+      let next_ancestors = list.prepend(ancestors, node.info)
 
-      list.map(node.children, fn(node) { generate_helpers(sub_ancestors, node) })
+      list.map(node.children, fn(node) {
+        generate_helpers(next_ancestors, node)
+      })
       |> string.join("")
     }
   }
 }
 
-fn generate_helpers_just_this(ancestors: List(Node), node: Node) {
+fn generate_helpers_just_this(ancestors: List(Info), node: Node) {
   generate_route_helper(ancestors, node)
 }
 
-fn generate_route_helper(ancestors: List(Node), cont: Node) {
-  let function_name = get_function_name_v2(ancestors, cont.info) <> "_route"
+fn generate_route_helper(ancestors: List(Info), cont: Node) {
+  let function_name = get_function_name(ancestors, cont.info) <> "_route"
 
   let function_arguments =
     get_function_arguments(ancestors, [], cont.info)
@@ -358,7 +365,7 @@ fn generate_route_helper(ancestors: List(Node), cont: Node) {
 
 @internal
 pub fn get_function_arguments(
-  ancestors: List(Node),
+  ancestors: List(Info),
   acc: List(types.Segment),
   info: Info,
 ) -> List(types.Segment) {
@@ -391,13 +398,13 @@ pub fn get_function_arguments(
 
   case ancestors {
     [next_ancestor, ..rest_ancestors] ->
-      get_function_arguments(rest_ancestors, next_acc, next_ancestor.info)
+      get_function_arguments(rest_ancestors, next_acc, next_ancestor)
     _ -> next_acc
   }
 }
 
 fn generate_route_helper_body(
-  ancestors: List(Node),
+  ancestors: List(Info),
   acc: List(String),
   info: Info,
 ) {
@@ -424,7 +431,7 @@ fn generate_route_helper_body(
     False -> "(" <> string.join(params, ", ") <> ")"
   }
 
-  let type_name = get_type_name_v2(ancestors, info)
+  let type_name = get_type_name(ancestors, info)
 
   let new_line = type_name <> params
 
@@ -435,55 +442,53 @@ fn generate_route_helper_body(
 
   case ancestors {
     [next_ancestor, ..rest_ancestors] -> {
-      generate_route_helper_body(rest_ancestors, next_acc, next_ancestor.info)
+      generate_route_helper_body(rest_ancestors, next_acc, next_ancestor)
     }
     _ -> next_acc
   }
 }
 
-fn get_function_name_v2(ancestors: List(Node), info: Info) -> String {
-  get_function_name_v2_do([], ancestors, info)
+@internal
+pub fn get_function_name(ancestors: List(Info), info: Info) -> String {
+  get_function_name_do([], ancestors, info)
   |> list.filter(fn(seg) { seg != "" })
   |> string.join("_")
 }
 
-fn get_function_name_v2_do(
+fn get_function_name_do(
   collected: List(String),
-  ancestors: List(Node),
+  ancestors: List(Info),
   info: Info,
 ) {
   let next = list.prepend(collected, justin.snake_case(info.name))
 
   case ancestors {
     [next_ancestor, ..rest_ancestors] -> {
-      get_function_name_v2_do(next, rest_ancestors, next_ancestor.info)
+      get_function_name_do(next, rest_ancestors, next_ancestor)
     }
     _ -> next
   }
 }
 
-fn get_type_name_v2(ancestors: List(Node), info: Info) -> String {
-  get_type_name_v2_do([], ancestors, info)
+@internal
+pub fn get_type_name(ancestors: List(Info), info: Info) -> String {
+  get_type_name_do([], ancestors, info)
   |> string.join("")
 }
 
-fn get_type_name_v2_do(
-  collected: List(String),
-  ancestors: List(Node),
-  info: Info,
-) {
+fn get_type_name_do(collected: List(String), ancestors: List(Info), info: Info) {
   let next = list.prepend(collected, justin.pascal_case(info.name))
 
   case ancestors {
     [next_ancestor, ..rest_ancestors] -> {
-      get_type_name_v2_do(next, rest_ancestors, next_ancestor.info)
+      get_type_name_do(next, rest_ancestors, next_ancestor)
     }
     _ -> next
   }
 }
 
-fn get_route_name_v2(ancestors: List(Node), info: Info) -> String {
-  get_type_name_v2(ancestors, info) <> "Route"
+fn get_route_name(ancestors: List(Info), info: Info) -> String {
+  get_type_name(ancestors, info) <> "Route"
 }
 
 fn get_segment_type_name(segment: types.Segment) {

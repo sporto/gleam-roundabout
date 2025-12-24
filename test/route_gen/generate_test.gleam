@@ -23,6 +23,26 @@ const routes = [
   ),
 ]
 
+pub fn get_type_name_test() {
+  let actual =
+    generate.get_type_name(
+      [types.Info(name: "client", segments: [])],
+      types.Info(name: "simpleUser", segments: []),
+    )
+
+  assert actual == "ClientSimpleUser"
+}
+
+pub fn get_function_name_test() {
+  let actual =
+    generate.get_function_name(
+      [types.Info(name: "client", segments: [])],
+      types.Info(name: "simpleUser", segments: []),
+    )
+
+  assert actual == "client_simple_user"
+}
+
 pub fn generate_type_test() {
   let assert Ok(root) = parse.parse(routes)
 
