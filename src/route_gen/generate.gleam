@@ -298,7 +298,7 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
 
   let variant_params_str = case list.is_empty(variant_params) {
     True -> ""
-    False -> "(" <> string.join(variant_params, ",") <> ")"
+    False -> "(" <> string.join(variant_params, ", ") <> ")"
   }
 
   let path =

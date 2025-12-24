@@ -8,8 +8,8 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
   case segments {
     [] -> Home |> Ok
     ["clients"] -> Clients |> Ok
-    ["clients", clientId, ..rest] -> with_int(clientId, fn(clientId) { client_segments_to_route(rest) |> result.map(fn(sub) {
-Client(clientId, sub)
+    ["clients", client_id, ..rest] -> with_int(client_id, fn(client_id) { client_segments_to_route(rest) |> result.map(fn(sub) {
+Client(client_id, sub)
         }) })
     _ -> Error(Nil)
   }
@@ -28,7 +28,7 @@ ClientOrders(sub)
 pub fn client_orders_segments_to_route(segments: List(String)) -> Result(ClientOrdersRoute, Nil) {
   case segments {
     [] -> ClientOrdersIndex |> Ok
-    [orderId] -> with_int(orderId, fn(orderId) { ClientOrdersShow(orderId) |> Ok })
+    [order_id] -> with_int(order_id, fn(order_id) { ClientOrdersShow(order_id) |> Ok })
     _ -> Error(Nil)
   }
 }

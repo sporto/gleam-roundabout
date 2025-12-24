@@ -6,3 +6,6 @@ example_check:
 
 snaps:
     gleam run -m birdie
+
+test:
+    gleam test
