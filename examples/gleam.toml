@@ -1,0 +1,9 @@
+name = "examples"
+version = "1.0.0"
+description = "Route generation example"
+
+[dependencies]
+route_gen = { path = ".." }
+
+[dev-dependencies]
+gleeunit = "~> 1.0"
