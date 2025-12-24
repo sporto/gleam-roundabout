@@ -1,0 +1,13 @@
+---
+version: 1.5.2
+title: generate_type_root
+file: ./test/route_gen/generate_test.gleam
+test_name: generate_type_root_test
+---
+pub type Route {
+  Home
+  Clients
+  Client(client_id: Int, sub: ClientRoute)
+}
+
+

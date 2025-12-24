@@ -1,0 +1,11 @@
+---
+version: 1.5.2
+title: generate_type_child
+file: ./test/route_gen/generate_test.gleam
+test_name: generate_type_child_test
+---
+pub type ClientUserRoute {
+  ClientUserShow(id: Int)
+}
+
+

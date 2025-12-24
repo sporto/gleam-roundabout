@@ -96,9 +96,9 @@ fn parse_definition_info(definition: Route) {
     definition.path
     |> list.map(fn(seg) {
       case seg {
-        Lit(val) -> types.Lit(val)
-        Str(val) -> types.Str(val)
-        Int(val) -> types.Int(val)
+        Lit(val) -> types.SegLit(val)
+        Str(val) -> types.SegStr(val)
+        Int(val) -> types.SegInt(val)
       }
     })
 

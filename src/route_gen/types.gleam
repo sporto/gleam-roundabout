@@ -1,8 +1,8 @@
 @internal
 pub type Segment {
-  Lit(name: String)
-  Str(name: String)
-  Int(name: String)
+  SegLit(name: String)
+  SegStr(name: String)
+  SegInt(name: String)
 }
 
 @internal

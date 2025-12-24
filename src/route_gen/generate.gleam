@@ -2,7 +2,7 @@ import gleam/list
 import gleam/option
 import gleam/string
 import justin
-import route_gen/types.{type Info, type Node}
+import route_gen/types.{type Info, type Node, SegInt, SegLit, SegStr}
 
 const indent = "  "
 
@@ -46,7 +46,8 @@ pub fn generate_type_rec(ancestors: List(Info), node: Node) {
   }
 }
 
-fn generate_type(ancestors: List(Info), node: Node) {
+@internal
+pub fn generate_type(ancestors: List(Info), node: Node) {
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let variants =
@@ -92,9 +93,9 @@ fn generate_type_variant(ancestors: List(Info), node: Node) {
 
 fn generate_type_variant_param(segment: types.Segment) {
   case segment {
-    types.Int(name) -> Ok(justin.snake_case(name) <> ": Int")
-    types.Str(name) -> Ok(justin.snake_case(name) <> ": String")
-    types.Lit(_) -> Error(Nil)
+    SegInt(name) -> Ok(justin.snake_case(name) <> ": Int")
+    SegStr(name) -> Ok(justin.snake_case(name) <> ": String")
+    SegLit(_) -> Error(Nil)
   }
 }
 
@@ -163,9 +164,9 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     node.info.segments
     |> list.map(fn(segment) {
       case segment {
-        types.Lit(name) -> "\"" <> justin.snake_case(name) <> "\""
-        types.Str(name) -> justin.snake_case(name)
-        types.Int(name) -> justin.snake_case(name)
+        SegLit(name) -> "\"" <> justin.snake_case(name) <> "\""
+        SegStr(name) -> justin.snake_case(name)
+        SegInt(name) -> justin.snake_case(name)
       }
     })
     |> string.join(", ")
@@ -181,9 +182,9 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     node.info.segments
     |> list.filter_map(fn(seg) {
       case seg {
-        types.Lit(_) -> Error(Nil)
-        types.Str(name) -> Ok(justin.snake_case(name))
-        types.Int(name) -> Ok(justin.snake_case(name))
+        SegLit(_) -> Error(Nil)
+        SegStr(name) -> Ok(justin.snake_case(name))
+        SegInt(name) -> Ok(justin.snake_case(name))
       }
     })
     |> fn(params) {
@@ -218,9 +219,9 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
   let right =
     list.fold(node.info.segments, right, fn(acc, segment) {
       case segment {
-        types.Lit(_) -> acc
-        types.Str(_) -> acc
-        types.Int(name) -> {
+        SegLit(_) -> acc
+        SegStr(_) -> acc
+        SegInt(name) -> {
           "with_int("
           <> justin.snake_case(name)
           <> ", fn("
@@ -284,9 +285,9 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
     node.info.segments
     |> list.filter_map(fn(seg) {
       case seg {
-        types.Lit(_) -> Error(Nil)
-        types.Str(name) -> Ok(justin.snake_case(name))
-        types.Int(name) -> Ok(justin.snake_case(name))
+        SegLit(_) -> Error(Nil)
+        SegStr(name) -> Ok(justin.snake_case(name))
+        SegInt(name) -> Ok(justin.snake_case(name))
       }
     })
     |> fn(items) {
@@ -305,9 +306,9 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
     node.info.segments
     |> list.map(fn(seg) {
       case seg {
-        types.Lit(name) -> "\"" <> name <> "/\""
-        types.Str(name) -> justin.snake_case(name)
-        types.Int(name) -> "int.to_string(" <> justin.snake_case(name) <> ")"
+        SegLit(name) -> "\"" <> name <> "/\""
+        SegStr(name) -> justin.snake_case(name)
+        SegInt(name) -> "int.to_string(" <> justin.snake_case(name) <> ")"
       }
     })
     |> string.join(" <> ")
@@ -440,9 +441,9 @@ pub fn get_function_arguments(
       let new_name = info.name <> "_" <> segment.name
 
       case segment {
-        types.Lit(_) -> types.Lit(new_name)
-        types.Str(_) -> types.Str(new_name)
-        types.Int(_) -> types.Int(new_name)
+        SegLit(_) -> SegLit(new_name)
+        SegStr(_) -> SegStr(new_name)
+        SegInt(_) -> SegInt(new_name)
       }
     })
 
@@ -452,9 +453,9 @@ pub fn get_function_arguments(
       let new_name = info.name <> "_" <> segment.name
 
       case segment {
-        types.Lit(_) -> Error(Nil)
-        types.Str(_) -> Ok(types.Str(new_name))
-        types.Int(_) -> Ok(types.Int(new_name))
+        SegLit(_) -> Error(Nil)
+        SegStr(_) -> Ok(SegStr(new_name))
+        SegInt(_) -> Ok(SegInt(new_name))
       }
     })
 
@@ -478,9 +479,9 @@ fn generate_route_helper_body(
       let name = justin.snake_case(info.name <> "_" <> segment.name)
 
       case segment {
-        types.Lit(_) -> Error(Nil)
-        types.Str(_) -> Ok(name)
-        types.Int(_) -> Ok(name)
+        SegLit(_) -> Error(Nil)
+        SegStr(_) -> Ok(name)
+        SegInt(_) -> Ok(name)
       }
     })
     |> fn(entries) {
@@ -557,9 +558,9 @@ fn get_route_name(ancestors: List(Info), info: Info) -> String {
 
 fn get_segment_type_name(segment: types.Segment) {
   case segment {
-    types.Int(_) -> Ok("Int")
-    types.Str(_) -> Ok("String")
-    types.Lit(_) -> Error(Nil)
+    SegInt(_) -> Ok("Int")
+    SegStr(_) -> Ok("String")
+    SegLit(_) -> Error(Nil)
   }
 }
 
