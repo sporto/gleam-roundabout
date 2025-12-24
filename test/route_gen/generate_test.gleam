@@ -1,9 +1,7 @@
 import birdie
-import gleam/list
-import gleam/result
 import route_gen.{Int, Lit, Route}
 import route_gen/generate
-import route_gen/types.{Info, Node}
+import route_gen/types.{Info, Node, SegInt}
 
 const routes = [
   Route(name: "home", path: [], sub: []),
@@ -25,16 +23,13 @@ const routes = [
   ),
 ]
 
-fn get_first_children(node: types.Node) {
-  use child <- result.try(list.first(node.children))
-  Ok(#([node.info], child))
-}
+const routes2 = [Node(info: Info(name: "name", path: []), sub: [])]
 
 pub fn get_type_name_test() {
   let actual =
     generate.get_type_name(
-      [Info(name: "client", segments: [])],
-      Info(name: "simpleUser", segments: []),
+      [Info(name: "client", path: [])],
+      Info(name: "simpleUser", path: []),
     )
 
   assert actual == "ClientSimpleUser"
@@ -43,8 +38,8 @@ pub fn get_type_name_test() {
 pub fn get_function_name_test() {
   let actual =
     generate.get_function_name(
-      [Info(name: "client", segments: [])],
-      Info(name: "simpleUser", segments: []),
+      [Info(name: "client", path: [])],
+      Info(name: "simpleUser", path: []),
     )
 
   assert actual == "client_simple_user"
@@ -62,14 +57,11 @@ pub fn generate_type_root_test() {
 }
 
 pub fn generate_type_child_test() {
-  let ancestors = [Info(name: "client", segments: [])]
+  let ancestors = [Info(name: "client", path: [])]
 
   let node =
-    Node(info: Info(name: "user", segments: []), children: [
-      Node(
-        info: Info(name: "Show", segments: [types.SegInt("id")]),
-        children: [],
-      ),
+    Node(info: Info(name: "user", path: []), sub: [
+      Node(info: Info(name: "Show", path: [SegInt("id")]), sub: []),
     ])
 
   let actual = generate.generate_type(ancestors, node)

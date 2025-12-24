@@ -51,27 +51,31 @@ pub fn main(definitions: List(Route), output_path: String) {
   Ok(Nil)
 }
 
-pub fn parse(definitions: List(Route)) {
-  use nodes <- result.try(parse_definitions(definitions))
+@internal
+pub fn parse(definitions: List(Route)) -> Result(types.Node, String) {
+  use sub <- result.try(parse_definitions("root", definitions))
 
-  let root =
-    types.Node(children: nodes, info: types.Info(name: "", segments: []))
+  let root = types.Node(sub:, info: types.Info(name: "", path: []))
 
   Ok(root)
 }
 
 @internal
 pub fn parse_definitions(
+  parent_name: String,
   definitions: List(Route),
 ) -> Result(List(types.Node), String) {
   use nodes <- result.try(list.try_map(definitions, parse_definition))
 
-  use nodes <- result.try(assert_no_duplicate_variant_names(nodes))
+  use nodes <- result.try(assert_no_duplicate_variant_names(parent_name, nodes))
 
   Ok(nodes)
 }
 
-fn assert_no_duplicate_variant_names(nodes: List(types.Node)) {
+fn assert_no_duplicate_variant_names(
+  parent_name: String,
+  nodes: List(types.Node),
+) {
   let variant_names =
     list.map(nodes, fn(item) { justin.snake_case(item.info.name) })
 
@@ -79,21 +83,26 @@ fn assert_no_duplicate_variant_names(nodes: List(types.Node)) {
 
   case list.length(variant_names) == set.size(as_set) {
     True -> Ok(nodes)
-    False -> Error("Routes contain duplicate names")
+    False -> Error("Route " <> parent_name <> " contain duplicate route names")
   }
 }
 
 fn parse_definition(definition: Route) {
-  let info = parse_definition_info(definition)
+  use info <- result.try(parse_definition_info(definition))
 
-  use children <- result.try(parse_definitions(definition.sub))
+  use sub <- result.try(parse_definitions(definition.name, definition.sub))
 
-  types.Node(info:, children:) |> Ok
+  types.Node(info:, sub:) |> Ok
 }
 
-fn parse_definition_info(definition: Route) {
-  let segments =
-    definition.path
+fn parse_definition_info(input: Route) {
+  use input_path <- result.try(assert_no_duplicate_segment_names(
+    input.name,
+    input.path,
+  ))
+
+  let path =
+    input_path
     |> list.map(fn(seg) {
       case seg {
         Lit(val) -> types.SegLit(val)
@@ -102,5 +111,23 @@ fn parse_definition_info(definition: Route) {
       }
     })
 
-  types.Info(name: definition.name, segments:)
+  types.Info(name: input.name, path:) |> Ok
+}
+
+fn assert_no_duplicate_segment_names(node_name: String, segments: List(Segment)) {
+  let segment_names =
+    list.filter_map(segments, fn(seg) {
+      case seg {
+        Lit(_) -> Error(Nil)
+        Str(val) -> Ok(justin.snake_case(val))
+        Int(val) -> Ok(justin.snake_case(val))
+      }
+    })
+
+  let as_set = set.from_list(segment_names)
+
+  case list.length(segment_names) == set.size(as_set) {
+    True -> Ok(segments)
+    False -> Error("Route " <> node_name <> " contain duplicate segment names")
+  }
 }

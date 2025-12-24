@@ -7,10 +7,10 @@ pub type Segment {
 
 @internal
 pub type Info {
-  Info(name: String, segments: List(Segment))
+  Info(name: String, path: List(Segment))
 }
 
 @internal
 pub type Node {
-  Node(children: List(Node), info: Info)
+  Node(sub: List(Node), info: Info)
 }
