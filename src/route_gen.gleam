@@ -13,11 +13,11 @@ pub type Segment {
   Int(name: String)
 }
 
-pub type RouteDef {
-  RouteDef(name: String, path: List(Segment), sub: List(RouteDef))
+pub type Route {
+  Route(name: String, path: List(Segment), sub: List(Route))
 }
 
-pub fn main(definitions: List(RouteDef), output_path: String) {
+pub fn main(definitions: List(Route), output_path: String) {
   use root <- result.try(parse(definitions))
 
   let types =
@@ -51,7 +51,7 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
   Ok(Nil)
 }
 
-pub fn parse(definitions: List(RouteDef)) {
+pub fn parse(definitions: List(Route)) {
   use nodes <- result.try(parse_definitions(definitions))
 
   let root =
@@ -62,7 +62,7 @@ pub fn parse(definitions: List(RouteDef)) {
 
 @internal
 pub fn parse_definitions(
-  definitions: List(RouteDef),
+  definitions: List(Route),
 ) -> Result(List(types.Node), String) {
   use nodes <- result.try(list.try_map(definitions, parse_definition))
 
@@ -83,7 +83,7 @@ fn assert_no_duplicate_variant_names(nodes: List(types.Node)) {
   }
 }
 
-fn parse_definition(definition: RouteDef) {
+fn parse_definition(definition: Route) {
   let info = parse_definition_info(definition)
 
   use children <- result.try(parse_definitions(definition.sub))
@@ -91,7 +91,7 @@ fn parse_definition(definition: RouteDef) {
   types.Node(info:, children:) |> Ok
 }
 
-fn parse_definition_info(definition: RouteDef) {
+fn parse_definition_info(definition: Route) {
   let segments =
     definition.path
     |> list.map(fn(seg) {

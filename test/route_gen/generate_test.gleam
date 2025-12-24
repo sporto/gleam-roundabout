@@ -1,22 +1,22 @@
 import birdie
-import route_gen.{Int, Lit, RouteDef}
+import route_gen.{Int, Lit, Route}
 import route_gen/generate
 import route_gen/types
 
 const routes = [
-  RouteDef(name: "home", path: [], sub: []),
-  RouteDef(name: "clients", path: [Lit("clients")], sub: []),
-  RouteDef(
+  Route(name: "home", path: [], sub: []),
+  Route(name: "clients", path: [Lit("clients")], sub: []),
+  Route(
     name: "client",
     path: [Lit("clients"), Int("clientId")],
     sub: [
-      RouteDef(name: "show", path: [], sub: []),
-      RouteDef(
+      Route(name: "show", path: [], sub: []),
+      Route(
         name: "orders",
         path: [Lit("orders")],
         sub: [
-          RouteDef(name: "index", path: [], sub: []),
-          RouteDef(name: "show", path: [Int("orderId")], sub: []),
+          Route(name: "index", path: [], sub: []),
+          Route(name: "show", path: [Int("orderId")], sub: []),
         ],
       ),
     ],

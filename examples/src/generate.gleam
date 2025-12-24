@@ -1,20 +1,20 @@
-import route_gen.{Int, Lit, RouteDef, Str}
+import route_gen.{Int, Lit, Route, Str}
 
 const routes = [
-  RouteDef(name: "home", path: [], sub: []),
-  RouteDef(name: "profile", path: [Lit("profile"), Str("id")], sub: []),
-  RouteDef(name: "order", path: [Lit("orders"), Int("id")], sub: []),
-  RouteDef(
+  Route(name: "home", path: [], sub: []),
+  Route(name: "profile", path: [Lit("profile"), Str("id")], sub: []),
+  Route(name: "order", path: [Lit("orders"), Int("id")], sub: []),
+  Route(
     name: "comment",
     path: [Lit("posts"), Int("postId"), Lit("comments"), Int("commentId")],
     sub: [],
   ),
-  RouteDef(
+  Route(
     name: "user",
     path: [Lit("users"), Int("id")],
     sub: [
-      RouteDef(name: "show", path: [], sub: []),
-      RouteDef(name: "new", path: [Lit("new")], sub: []),
+      Route(name: "show", path: [], sub: []),
+      Route(name: "new", path: [Lit("new")], sub: []),
     ],
   ),
 ]
