@@ -1,8 +1,9 @@
 import filepath
 import gleam/list
 import gleam/result
+import gleam/set
+import justin
 import route_gen/generate
-import route_gen/parse
 import route_gen/types
 import simplifile
 
@@ -17,11 +18,7 @@ pub type RouteDef {
 }
 
 pub fn main(definitions: List(RouteDef), output_path: String) {
-  let definitions_2 =
-    definitions
-    |> list.map(route_def_to_internal)
-
-  use root <- result.try(parse.parse(definitions_2))
+  use root <- result.try(parse(definitions))
 
   let types =
     generate.generate_type_rec([], root)
@@ -54,9 +51,50 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
   Ok(Nil)
 }
 
-fn route_def_to_internal(def: RouteDef) -> types.InputDef {
-  let path =
-    list.map(def.path, fn(seg) {
+pub fn parse(definitions: List(RouteDef)) {
+  use nodes <- result.try(parse_definitions(definitions))
+
+  let root =
+    types.Node(children: nodes, info: types.Info(name: "", segments: []))
+
+  Ok(root)
+}
+
+@internal
+pub fn parse_definitions(
+  definitions: List(RouteDef),
+) -> Result(List(types.Node), String) {
+  use nodes <- result.try(list.try_map(definitions, parse_definition))
+
+  use nodes <- result.try(assert_no_duplicate_variant_names(nodes))
+
+  Ok(nodes)
+}
+
+fn assert_no_duplicate_variant_names(nodes: List(types.Node)) {
+  let variant_names =
+    list.map(nodes, fn(item) { justin.snake_case(item.info.name) })
+
+  let as_set = set.from_list(variant_names)
+
+  case list.length(variant_names) == set.size(as_set) {
+    True -> Ok(nodes)
+    False -> Error("Routes contain duplicate names")
+  }
+}
+
+fn parse_definition(definition: RouteDef) {
+  let info = parse_definition_info(definition)
+
+  use children <- result.try(parse_definitions(definition.sub))
+
+  types.Node(info:, children:) |> Ok
+}
+
+fn parse_definition_info(definition: RouteDef) {
+  let segments =
+    definition.path
+    |> list.map(fn(seg) {
       case seg {
         Lit(val) -> types.Lit(val)
         Str(val) -> types.Str(val)
@@ -64,7 +102,5 @@ fn route_def_to_internal(def: RouteDef) -> types.InputDef {
       }
     })
 
-  let sub = list.map(def.sub, route_def_to_internal)
-
-  types.InputDef(name: def.name, path:, sub:)
+  types.Info(name: definition.name, segments:)
 }

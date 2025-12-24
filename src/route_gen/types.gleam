@@ -6,11 +6,6 @@ pub type Segment {
 }
 
 @internal
-pub type InputDef {
-  InputDef(name: String, path: List(Segment), sub: List(InputDef))
-}
-
-@internal
 pub type Info {
   Info(name: String, segments: List(Segment))
 }

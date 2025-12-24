@@ -1,9 +1,8 @@
 import gleam/list
 import gleam/option
-import gleam/result
 import gleam/string
 import justin
-import route_gen/types.{type Info, type InputDef, type Node, Info, Node}
+import route_gen/types.{type Info, type Node}
 
 const indent = "  "
 
