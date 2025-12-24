@@ -26,7 +26,7 @@ const routes = [
 pub fn generate_type_test() {
   let assert Ok(root) = parse.parse(routes)
 
-  let assert Ok(actual) = generate.generate_type(root)
+  let assert Ok(actual) = generate.generate_type([], root)
 
   actual
   |> birdie.snap(title: "generate_type")

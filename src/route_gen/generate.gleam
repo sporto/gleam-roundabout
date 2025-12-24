@@ -25,29 +25,31 @@ pub fn generate_imports() {
 /// }
 /// ```
 @internal
-pub fn generate_type(node: Node) {
+pub fn generate_type(ancestors: List(Node), node: Node) {
   case list.is_empty(node.children) {
     True -> Error(Nil)
     False -> {
+      let sub_type_ancestors = list.prepend(ancestors, node)
+
       let sub_types =
         node.children
-        |> list.filter_map(fn(node) { generate_type(node) })
+        |> list.filter_map(fn(node) { generate_type(sub_type_ancestors, node) })
         |> string.join("")
 
-      let out = generate_type_just_this(node) <> sub_types
+      let out = generate_type_just_this(ancestors, node) <> sub_types
 
       Ok(out)
     }
   }
 }
 
-fn generate_type_just_this(node: Node) {
+fn generate_type_just_this(ancestors: List(Node), node: Node) {
   let variants =
     node.children
     |> list.map(generate_type_variant)
     |> string.join("\n")
 
-  let route_name = get_route_name(node.info)
+  let route_name = get_route_name_v2(ancestors, node.info)
 
   "pub type " <> route_name <> " {\n" <> variants <> "\n}" <> block_break
 }
@@ -441,8 +443,32 @@ fn get_type_name_do(collected: List(String), info: Info) {
   }
 }
 
+fn get_type_name_v2(ancestors: List(Node), info: Info) -> String {
+  get_type_name_v2_do([], ancestors, info)
+  |> string.join("")
+}
+
+fn get_type_name_v2_do(
+  collected: List(String),
+  ancestors: List(Node),
+  info: Info,
+) {
+  let next = list.prepend(collected, justin.pascal_case(info.name))
+
+  case ancestors {
+    [next_ancestor, ..rest_ancestors] -> {
+      get_type_name_v2_do(next, rest_ancestors, next_ancestor.info)
+    }
+    _ -> next
+  }
+}
+
 fn get_route_name(info: Info) -> String {
   get_type_name(info) <> "Route"
+}
+
+fn get_route_name_v2(ancestors: List(Node), info: Info) -> String {
+  get_type_name_v2(ancestors, info) <> "Route"
 }
 
 fn get_segment_type_name(segment: types.Segment) {

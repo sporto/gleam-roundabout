@@ -24,7 +24,7 @@ pub fn main(definitions: List(RouteDef), output_path: String) {
   use root <- result.try(parse.parse(definitions_2))
 
   let types =
-    generate.generate_type(root)
+    generate.generate_type([], root)
     |> result.unwrap("")
 
   let segments_to_route =
