@@ -36,6 +36,7 @@ pub fn main(definitions: List(Route), output_path: String) {
 
   let all =
     doc.concat([
+      generate.generate_header(),
       generate.generate_imports(),
       types,
       segments_to_route,

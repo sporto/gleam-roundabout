@@ -26,6 +26,14 @@ fn case_arrow() {
 }
 
 @internal
+pub fn generate_header() {
+  "//// This module was generated using roundabout.
+////
+"
+  |> doc.from_string
+}
+
+@internal
 pub fn generate_imports() -> Document {
   [
     doc.from_string("import gleam/int"),

@@ -1,3 +1,5 @@
+//// This module was generated using roundabout.
+////
 import gleam/int
 import gleam/result
 
