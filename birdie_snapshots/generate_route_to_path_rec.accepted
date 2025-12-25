@@ -1,7 +1,7 @@
 ---
 version: 1.5.2
 title: generate_route_to_path_rec
-file: ./test/routegen/generate_test.gleam
+file: ./test/roundabout/generate_test.gleam
 test_name: generate_route_to_path_rec_test
 ---
 pub fn route_to_path(route: Route) -> String {

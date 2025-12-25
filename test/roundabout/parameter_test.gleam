@@ -1,5 +1,5 @@
 import gleam/result
-import routegen/parameter.{Int, name, new}
+import roundabout/parameter.{Int, name, new}
 
 pub fn valid_test() {
   assert new("client_id", Int) |> result.map(name) == Ok("client_id")

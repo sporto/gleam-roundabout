@@ -1,7 +1,7 @@
-# routegen
+# roundabout
 
-[![Package Version](https://img.shields.io/hexpm/v/routegen)](https://hex.pm/packages/routegen)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/routegen/)
+[![Package Version](https://img.shields.io/hexpm/v/roundabout)](https://hex.pm/packages/roundabout)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/roundabout/)
 
 A route generator for Gleam.
 
@@ -42,7 +42,7 @@ This packages provides a generator which gives you:
 ## Install
 
 ```sh
-gleam add routegen@1
+gleam add roundabout@1
 ```
 
 ## Generating routes
@@ -50,7 +50,7 @@ gleam add routegen@1
 Create a module in your project which defines the route definitions and calls the generator. e.g. in `src/gen_routes.gleam`
 
 ```gleam
-import routegen.{Int, Lit, Route, Str}
+import roundabout.{Int, Lit, Route, Str}
 
 const routes = [
   Route(name: "home", path: [], sub: []),
@@ -69,7 +69,7 @@ const routes = [
 ]
 
 pub fn main() -> Nil {
-    routegen.main(routes, "src/generated/routes.gleam")
+    roundabout.main(routes, "src/generated/routes.gleam")
 }
 ```
 
@@ -94,7 +94,7 @@ The first one will always match over the second one, make sure that literal rout
 
 ---
 
-Further documentation can be found at <https://hexdocs.pm/routegen>.
+Further documentation can be found at <https://hexdocs.pm/roundabout>.
 
 ## TODO
 

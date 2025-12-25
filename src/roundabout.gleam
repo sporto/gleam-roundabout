@@ -3,11 +3,11 @@ import gleam/list
 import gleam/result
 import gleam/set
 import justin
-import routegen/constant
-import routegen/generate
-import routegen/node
-import routegen/parameter
-import routegen/type_name
+import roundabout/constant
+import roundabout/generate
+import roundabout/node
+import roundabout/parameter
+import roundabout/type_name
 import simplifile
 
 pub type Segment {

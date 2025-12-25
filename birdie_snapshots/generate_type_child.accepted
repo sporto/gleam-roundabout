@@ -1,7 +1,7 @@
 ---
 version: 1.5.2
 title: generate_type_child
-file: ./test/routegen/generate_test.gleam
+file: ./test/roundabout/generate_test.gleam
 test_name: generate_type_child_test
 ---
 pub type ClientUserRoute {

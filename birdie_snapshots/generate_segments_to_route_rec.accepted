@@ -1,7 +1,7 @@
 ---
 version: 1.5.2
 title: generate_segments_to_route_rec
-file: ./test/routegen/generate_test.gleam
+file: ./test/roundabout/generate_test.gleam
 test_name: generate_segments_to_route_rec_test
 ---
 pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {

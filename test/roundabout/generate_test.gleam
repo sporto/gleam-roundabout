@@ -1,9 +1,9 @@
 import birdie
-import routegen/constant
-import routegen/generate
-import routegen/node.{Info, Node, SegLit, SegParam}
-import routegen/parameter
-import routegen/type_name
+import roundabout/constant
+import roundabout/generate
+import roundabout/node.{Info, Node, SegLit, SegParam}
+import roundabout/parameter
+import roundabout/type_name
 
 fn root() {
   Node(Info(type_name.unsafe(""), []), [

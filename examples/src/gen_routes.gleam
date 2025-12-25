@@ -1,4 +1,4 @@
-import routegen.{Int, Lit, Route, Str}
+import roundabout.{Int, Lit, Route, Str}
 
 const routes = [
   Route(name: "home", path: [], sub: []),
@@ -21,5 +21,5 @@ const routes = [
 ]
 
 pub fn main() {
-  routegen.main(routes, "src/generated/routes.gleam")
+  roundabout.main(routes, "src/generated/routes.gleam")
 }
