@@ -9,8 +9,7 @@ pub fn home_route() -> Route {
 }
 
 pub fn home_path() -> String {
-  home_route()
-  |> route_to_path
+  home_route() |> route_to_path
 }
 
 pub fn clients_route() -> Route {
@@ -18,35 +17,28 @@ pub fn clients_route() -> Route {
 }
 
 pub fn clients_path() -> String {
-  clients_route()
-  |> route_to_path
+  clients_route() |> route_to_path
 }
 
 pub fn client_show_route(client_client_id: Int) -> Route {
-  ClientShow
-  |> Client(client_client_id, _)
+  ClientShow |> Client(client_client_id, _)
 }
 
 pub fn client_show_path(client_client_id: Int) -> String {
-  client_show_route(client_client_id)
-  |> route_to_path
+  client_show_route(client_client_id) |> route_to_path
 }
 
 pub fn client_orders_index_route(client_client_id: Int) -> Route {
-  ClientOrdersIndex
-  |> ClientOrders(_)
-  |> Client(client_client_id, _)
+  ClientOrdersIndex |> ClientOrders(_) |> Client(client_client_id, _)
 }
 
 pub fn client_orders_index_path(client_client_id: Int) -> String {
-  client_orders_index_route(client_client_id)
-  |> route_to_path
+  client_orders_index_route(client_client_id) |> route_to_path
 }
 
 pub fn client_orders_show_route(client_client_id: Int, client_orders_show_order_id: Int) -> Route {
   ClientOrdersShow(show_order_id)
-  |> ClientOrders(_)
-  |> Client(client_client_id, _)
+  |> ClientOrders(_) |> Client(client_client_id, _)
 }
 
 pub fn client_orders_show_path(client_client_id: Int, client_orders_show_order_id: Int) -> String {

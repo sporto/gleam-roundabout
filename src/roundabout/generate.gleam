@@ -8,8 +8,6 @@ import roundabout/node.{type Info, type Node, type Segment, SegLit, SegParam}
 import roundabout/parameter
 import roundabout/type_name
 
-const block_break = "\n\n"
-
 /// Join two strings with <>
 /// We allow breaking just before
 fn string_join() {
@@ -75,12 +73,23 @@ pub fn generate_type(ancestors: List(Info), node: Node) -> Document {
   let variants =
     node.sub
     |> list.map(generate_type_variant(next_ancestors, _))
-    |> string.join("\n")
+    |> doc.join(doc.line)
 
   let route_name = get_route_name(ancestors, node.info)
 
-  { "pub type " <> route_name <> " {\n" <> variants <> "\n}" <> block_break }
-  |> doc.from_string
+  doc.concat([
+    doc.from_string("pub type " <> route_name <> " {"),
+    doc.nest_docs(
+      [
+        doc.line,
+        variants,
+      ],
+      2,
+    ),
+    doc.line,
+    doc.from_string("}"),
+    doc.lines(2),
+  ])
 }
 
 /// Generate one type variant e.g.
@@ -88,7 +97,7 @@ pub fn generate_type(ancestors: List(Info), node: Node) -> Document {
 /// ```
 ///   User(user_id: Int, sub: UserRoute)
 /// ```
-fn generate_type_variant(ancestors: List(Info), node: Node) -> String {
+fn generate_type_variant(ancestors: List(Info), node: Node) -> Document {
   let type_name = get_type_name(ancestors, node.info)
 
   let sub = case list.is_empty(node.sub) {
@@ -111,7 +120,7 @@ fn generate_type_variant(ancestors: List(Info), node: Node) -> String {
     False -> "(" <> string.join(params, ", ") <> ")"
   }
 
-  "  " <> type_name <> params
+  doc.from_string(type_name <> params)
 }
 
 fn generate_type_variant_param(segment: Segment) {
@@ -507,22 +516,18 @@ fn generate_route_helper(ancestors: List(Info), cont: Node) -> Document {
     |> string.join(", ")
 
   let body =
-    "  "
-    <> generate_route_helper_body(ancestors, [], cont.info)
-    |> string.join("\n  |> ")
+    generate_route_helper_body(ancestors, [], cont.info)
+    |> doc.join(pipe_join())
 
-  let out =
-    "pub fn "
-    <> function_name
-    <> "("
-    <> function_arguments
-    <> ") -> Route {\n"
-    <> body
-    <> "\n"
-    <> "}"
-    <> block_break
-
-  doc.from_string(out)
+  doc.concat([
+    doc.from_string(
+      "pub fn " <> function_name <> "(" <> function_arguments <> ") -> Route {",
+    ),
+    doc.nest_docs([doc.line, body], 2),
+    doc.line,
+    doc.from_string("}"),
+    doc.lines(2),
+  ])
 }
 
 fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
@@ -553,25 +558,23 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
     |> string.join(", ")
 
   let body =
-    "  "
-    <> route_function_name
-    <> "("
-    <> callee_arguments
-    <> ")\n"
-    <> "  |> route_to_path"
+    doc.from_string(route_function_name <> "(" <> callee_arguments <> ")")
+    |> doc.append(pipe_join())
+    |> doc.append(doc.from_string("route_to_path"))
 
-  let out =
-    "pub fn "
-    <> path_function_name
-    <> "("
-    <> this_function_arguments
-    <> ") -> String {\n"
-    <> body
-    <> "\n"
-    <> "}"
-    <> block_break
-
-  doc.from_string(out)
+  doc.concat([
+    doc.from_string(
+      "pub fn "
+      <> path_function_name
+      <> "("
+      <> this_function_arguments
+      <> ") -> String {",
+    ),
+    doc.nest_docs([doc.line, body], 2),
+    doc.line,
+    doc.from_string("}"),
+    doc.lines(2),
+  ])
 }
 
 @internal
@@ -633,9 +636,9 @@ pub fn get_function_arguments(
 
 fn generate_route_helper_body(
   ancestors: List(Info),
-  acc: List(String),
+  acc: List(Document),
   info: Info,
-) {
+) -> List(Document) {
   let params =
     info.path
     |> list.filter_map(fn(segment) {
@@ -661,7 +664,7 @@ fn generate_route_helper_body(
 
   let type_name = get_type_name(ancestors, info)
 
-  let new_line = type_name <> params
+  let new_line = doc.from_string(type_name <> params)
 
   let next_acc = case type_name {
     "" -> acc
