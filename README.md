@@ -1,7 +1,9 @@
-# roundabout
+# Roundabout
 
 [![Package Version](https://img.shields.io/hexpm/v/roundabout)](https://hex.pm/packages/roundabout)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/roundabout/)
+
+![Roundabout](assets/roundabout.jpeg)
 
 A route generator for Gleam.
 
