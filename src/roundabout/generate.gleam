@@ -2,7 +2,6 @@ import gleam/list
 import gleam/option
 import gleam/result
 import gleam/string
-import justin
 import roundabout/constant
 import roundabout/node.{type Info, type Node, type Segment, SegLit, SegParam}
 import roundabout/parameter
@@ -32,20 +31,18 @@ pub fn generate_imports() {
 /// ```
 ///
 @internal
-pub fn generate_type_rec(ancestors: List(Info), node: Node) {
+pub fn generate_type_rec(ancestors: List(Info), node: Node) -> String {
   case list.is_empty(node.sub) {
-    True -> Error(Nil)
+    True -> ""
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
         node.sub
-        |> list.filter_map(fn(node) { generate_type_rec(next_ancestors, node) })
+        |> list.map(fn(node) { generate_type_rec(next_ancestors, node) })
         |> string.join("")
 
-      let out = generate_type(ancestors, node) <> sub_types
-
-      Ok(out)
+      generate_type(ancestors, node) <> sub_types
     }
   }
 }
@@ -69,7 +66,7 @@ pub fn generate_type(ancestors: List(Info), node: Node) {
 /// ```
 ///   User(user_id: Int, sub: UserRoute)
 /// ```
-fn generate_type_variant(ancestors: List(Info), node: Node) {
+fn generate_type_variant(ancestors: List(Info), node: Node) -> String {
   let type_name = get_type_name(ancestors, node.info)
 
   let sub = case list.is_empty(node.sub) {
@@ -115,27 +112,28 @@ fn generate_type_variant_param(segment: Segment) {
 /// ```
 ///
 @internal
-pub fn generate_segments_to_route_rec(ancestors: List(Info), node: Node) {
+pub fn generate_segments_to_route_rec(
+  ancestors: List(Info),
+  node: Node,
+) -> String {
   case list.is_empty(node.sub) {
-    True -> Error(Nil)
+    True -> ""
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
-        list.filter_map(node.sub, fn(sub) {
+        list.map(node.sub, fn(sub) {
           generate_segments_to_route_rec(next_ancestors, sub)
         })
         |> string.join("")
 
-      let out = generate_segments_to_route(ancestors, node) <> sub_types
-
-      Ok(out)
+      generate_segments_to_route(ancestors, node) <> sub_types
     }
   }
 }
 
 @internal
-pub fn generate_segments_to_route(ancestors: List(Info), node: Node) {
+pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> String {
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let segments_to_route_cases =
@@ -245,19 +243,19 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
 }
 
 @internal
-pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) {
+pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) -> String {
   case list.is_empty(node.sub) {
-    True -> Error(Nil)
+    True -> ""
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
-        list.filter_map(node.sub, fn(node) {
+        list.map(node.sub, fn(node) {
           generate_route_to_path_rec(next_ancestors, node)
         })
-        |> string.join("\n")
+        |> string.join("")
 
-      { generate_route_to_path(ancestors, node) <> sub_types } |> Ok
+      { generate_route_to_path(ancestors, node) <> sub_types }
     }
   }
 }
@@ -360,7 +358,7 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
 }
 
 @internal
-pub fn generate_helpers_rec(ancestors: List(Info), node: Node) {
+pub fn generate_helpers_rec(ancestors: List(Info), node: Node) -> String {
   // Only leaf nodes are generated
   case list.is_empty(node.sub) {
     True -> {

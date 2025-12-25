@@ -88,7 +88,7 @@ pub fn generate_type_child_test() {
 
 pub fn generate_type_rec_test() {
   let assert Ok(root) = root()
-  let assert Ok(actual) = generate.generate_type_rec([], root)
+  let actual = generate.generate_type_rec([], root)
 
   actual
   |> birdie.snap(title: "generate_type_rec")
@@ -106,7 +106,7 @@ pub fn generate_segments_to_route_root_test() {
 
 pub fn generate_segments_to_route_rec_test() {
   let assert Ok(root) = root()
-  let assert Ok(actual) = generate.generate_segments_to_route_rec([], root)
+  let actual = generate.generate_segments_to_route_rec([], root)
 
   actual
   |> birdie.snap(title: "generate_segments_to_route_rec")
@@ -124,7 +124,7 @@ pub fn generate_route_to_path_root_test() {
 
 pub fn generate_route_to_path_rec_test() {
   let assert Ok(root) = root()
-  let assert Ok(actual) = generate.generate_route_to_path_rec([], root)
+  let actual = generate.generate_route_to_path_rec([], root)
 
   actual
   |> birdie.snap(title: "generate_route_to_path_rec")

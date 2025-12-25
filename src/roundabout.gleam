@@ -23,17 +23,11 @@ pub type Route {
 pub fn main(definitions: List(Route), output_path: String) {
   use root <- result.try(parse(definitions))
 
-  let types =
-    generate.generate_type_rec([], root)
-    |> result.unwrap("")
+  let types = generate.generate_type_rec([], root)
 
-  let segments_to_route =
-    generate.generate_segments_to_route_rec([], root)
-    |> result.unwrap("")
+  let segments_to_route = generate.generate_segments_to_route_rec([], root)
 
-  let routes_to_path =
-    generate.generate_route_to_path_rec([], root)
-    |> result.unwrap("")
+  let routes_to_path = generate.generate_route_to_path_rec([], root)
 
   let helpers = generate.generate_helpers_rec([], root)
 
