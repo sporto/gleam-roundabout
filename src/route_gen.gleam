@@ -4,7 +4,7 @@ import gleam/result
 import gleam/set
 import justin
 import route_gen/generate
-import route_gen/parameter_name
+import route_gen/parameter
 import route_gen/types
 import simplifile
 
@@ -108,12 +108,12 @@ fn parse_definition_info(input: Route) {
       case seg {
         Lit(val) -> types.SegLit(val) |> Ok
         Str(val) -> {
-          parameter_name.new(val)
-          |> result.map(types.SegStr)
+          parameter.new(val, parameter.Str)
+          |> result.map(types.SegParam)
         }
         Int(val) -> {
-          parameter_name.new(val)
-          |> result.map(types.SegInt)
+          parameter.new(val, parameter.Int)
+          |> result.map(types.SegParam)
         }
       }
     })

@@ -3,8 +3,8 @@ import gleam/option
 import gleam/result
 import gleam/string
 import justin
-import route_gen/parameter_name
-import route_gen/types.{type Info, type Node, SegInt, SegLit, SegStr}
+import route_gen/parameter
+import route_gen/types.{type Info, type Node, SegLit, SegParam}
 
 const indent = "  "
 
@@ -95,8 +95,7 @@ fn generate_type_variant(ancestors: List(Info), node: Node) {
 
 fn generate_type_variant_param(segment: types.Segment) {
   case segment {
-    SegInt(name) -> Ok(parameter_name.to_string(name) <> ": Int")
-    SegStr(name) -> Ok(parameter_name.to_string(name) <> ": String")
+    SegParam(param) -> Ok(parameter.full(param))
     SegLit(_) -> Error(Nil)
   }
 }
@@ -174,8 +173,7 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     |> list.map(fn(segment) {
       case segment {
         SegLit(name) -> "\"" <> justin.snake_case(name) <> "\""
-        SegStr(name) -> parameter_name.to_string(name)
-        SegInt(name) -> parameter_name.to_string(name)
+        SegParam(param) -> parameter.name(param)
       }
     })
     |> string.join(", ")
@@ -192,8 +190,7 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     |> list.filter_map(fn(seg) {
       case seg {
         SegLit(_) -> Error(Nil)
-        SegStr(name) -> Ok(parameter_name.to_string(name))
-        SegInt(name) -> Ok(parameter_name.to_string(name))
+        SegParam(param) -> Ok(parameter.name(param))
       }
     })
     |> fn(params) {
@@ -229,15 +226,15 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     list.fold(node.info.path, right, fn(acc, segment) {
       case segment {
         SegLit(_) -> acc
-        SegStr(_) -> acc
-        SegInt(name) -> {
-          "with_int("
-          <> parameter_name.to_string(name)
-          <> ", fn("
-          <> parameter_name.to_string(name)
-          <> ") { "
-          <> acc
-          <> " })"
+        SegParam(param) -> {
+          case parameter.kind(param) {
+            parameter.Str -> acc
+            parameter.Int -> {
+              let name = parameter.name(param)
+
+              "with_int(" <> name <> ", fn(" <> name <> ") { " <> acc <> " })"
+            }
+          }
         }
       }
     })
@@ -302,14 +299,9 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
     |> list.filter_map(fn(seg) {
       case seg {
         SegLit(_) -> Error(Nil)
-        SegStr(name) -> {
-          name
-          |> parameter_name.to_string
-          |> Ok
-        }
-        SegInt(name) -> {
-          name
-          |> parameter_name.to_string
+        SegParam(param) -> {
+          param
+          |> parameter.name
           |> Ok
         }
       }
@@ -331,9 +323,14 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
     |> list.map(fn(seg) {
       case seg {
         SegLit(name) -> "\"" <> name <> "/\""
-        SegStr(name) -> parameter_name.to_string(name)
-        SegInt(name) ->
-          "int.to_string(" <> parameter_name.to_string(name) <> ")"
+        SegParam(param) -> {
+          let name = parameter.name(param)
+
+          case parameter.kind(param) {
+            parameter.Str -> name
+            parameter.Int -> "int.to_string(" <> name <> ")"
+          }
+        }
       }
     })
     |> string.join(" <> ")
@@ -389,16 +386,9 @@ fn generate_route_helper(ancestors: List(Info), cont: Node) {
   let function_arguments =
     get_function_arguments(ancestors, [], cont.info)
     |> list.filter_map(fn(segment) {
-      use type_name <- require_segment_type_name(segment)
-
       case segment {
         SegLit(_) -> Error(Nil)
-        SegInt(name) -> {
-          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
-        }
-        SegStr(name) -> {
-          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
-        }
+        SegParam(param) -> parameter.full(param) |> Ok
       }
     })
     |> string.join(", ")
@@ -429,16 +419,9 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) {
   let this_function_arguments =
     function_arguments
     |> list.filter_map(fn(segment) {
-      use type_name <- require_segment_type_name(segment)
-
       case segment {
         SegLit(_) -> Error(Nil)
-        SegInt(name) -> {
-          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
-        }
-        SegStr(name) -> {
-          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
-        }
+        SegParam(name) -> parameter.full(name) |> Ok
       }
     })
     |> string.join(", ")
@@ -448,8 +431,7 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) {
     |> list.filter_map(fn(segment) {
       case segment {
         SegLit(_) -> Error(Nil)
-        SegInt(name) -> Ok(parameter_name.to_string(name))
-        SegStr(name) -> Ok(parameter_name.to_string(name))
+        SegParam(name) -> Ok(parameter.name(name))
       }
     })
     |> string.join(", ")
@@ -485,19 +467,15 @@ pub fn get_function_arguments(
     |> list.filter_map(fn(segment) {
       case segment {
         SegLit(name) -> SegLit(info.name <> "_" <> name) |> Ok
-        SegStr(name) -> {
-          let new_name = info.name <> "_" <> parameter_name.to_string(name)
+        SegParam(param) -> {
+          let new_name = info.name <> "_" <> parameter.name(param)
 
-          use new_name <- result.try(parameter_name.new(new_name))
+          use new_param <- result.try(parameter.new(
+            new_name,
+            parameter.kind(param),
+          ))
 
-          SegStr(new_name) |> Ok
-        }
-        SegInt(name) -> {
-          let new_name = info.name <> "_" <> parameter_name.to_string(name)
-
-          use new_name <- result.try(parameter_name.new(new_name))
-
-          SegInt(new_name) |> Ok
+          SegParam(new_param) |> Ok
         }
       }
     })
@@ -507,33 +485,17 @@ pub fn get_function_arguments(
     |> list.filter_map(fn(segment) {
       case segment {
         SegLit(_) -> Error(Nil)
-        SegStr(name) -> {
+        SegParam(param) -> {
           let new_name = {
-            justin.snake_case(info.name)
-            <> "_"
-            <> parameter_name.to_string(name)
+            justin.snake_case(info.name) <> "_" <> parameter.name(param)
           }
 
-          use new_name <- result.try(
-            parameter_name.new(new_name)
+          use new_param <- result.try(
+            parameter.new(new_name, parameter.kind(param))
             |> result.replace_error(Nil),
           )
 
-          Ok(SegStr(new_name))
-        }
-        SegInt(name) -> {
-          let new_name = {
-            justin.snake_case(info.name)
-            <> "_"
-            <> parameter_name.to_string(name)
-          }
-
-          use new_name <- result.try(
-            parameter_name.new(new_name)
-            |> result.replace_error(Nil),
-          )
-
-          Ok(SegInt(new_name))
+          Ok(SegParam(new_param))
         }
       }
     })
@@ -557,20 +519,8 @@ fn generate_route_helper_body(
     |> list.filter_map(fn(segment) {
       case segment {
         SegLit(_) -> Error(Nil)
-        SegStr(name) -> {
-          {
-            justin.snake_case(info.name)
-            <> "_"
-            <> parameter_name.to_string(name)
-          }
-          |> Ok
-        }
-        SegInt(name) -> {
-          {
-            justin.snake_case(info.name)
-            <> "_"
-            <> parameter_name.to_string(name)
-          }
+        SegParam(param) -> {
+          { justin.snake_case(info.name) <> "_" <> parameter.name(param) }
           |> Ok
         }
       }
@@ -649,9 +599,8 @@ fn get_route_name(ancestors: List(Info), info: Info) -> String {
 
 fn get_segment_type_name(segment: types.Segment) {
   case segment {
-    SegInt(_) -> Ok("Int")
-    SegStr(_) -> Ok("String")
     SegLit(_) -> Error(Nil)
+    SegParam(param) -> parameter.type_name(param) |> Ok
   }
 }
 

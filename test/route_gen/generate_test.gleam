@@ -1,21 +1,21 @@
 import birdie
 import gleam/result
 import route_gen/generate
-import route_gen/parameter_name
-import route_gen/types.{Info, Node, SegInt, SegLit}
+import route_gen/parameter
+import route_gen/types.{Info, Node, SegLit, SegParam}
 
 fn root() {
-  use par_client_id <- result.try(parameter_name.new("clientId"))
-  use par_order_id <- result.try(parameter_name.new("orderId"))
+  use par_client_id <- result.try(parameter.new("clientId", parameter.Int))
+  use par_order_id <- result.try(parameter.new("orderId", parameter.Int))
 
   Node(Info("", []), [
     Node(Info("home", []), []),
     Node(Info("clients", [SegLit("clients")]), []),
-    Node(Info("client", [SegLit("clients"), SegInt(par_client_id)]), [
+    Node(Info("client", [SegLit("clients"), SegParam(par_client_id)]), [
       Node(Info("show", []), []),
       Node(Info("orders", [SegLit("orders")]), [
         Node(Info("index", []), []),
-        Node(Info("show", [SegInt(par_order_id)]), []),
+        Node(Info("show", [SegParam(par_order_id)]), []),
       ]),
     ]),
   ])
@@ -55,11 +55,11 @@ pub fn generate_type_root_test() {
 pub fn generate_type_child_test() {
   let ancestors = [Info(name: "client", path: [])]
 
-  let assert Ok(par_id) = parameter_name.new("id")
+  let assert Ok(par_id) = parameter.new("id", parameter.Int)
 
   let node =
     Node(info: Info(name: "user", path: []), sub: [
-      Node(info: Info(name: "Show", path: [SegInt(par_id)]), sub: []),
+      Node(info: Info(name: "Show", path: [SegParam(par_id)]), sub: []),
     ])
 
   let actual = generate.generate_type(ancestors, node)

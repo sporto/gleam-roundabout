@@ -1,10 +1,9 @@
-import route_gen/parameter_name.{type ParameterName}
+import route_gen/parameter.{type Parameter}
 
 @internal
 pub type Segment {
   SegLit(name: String)
-  SegStr(name: ParameterName)
-  SegInt(name: ParameterName)
+  SegParam(name: Parameter)
 }
 
 @internal
