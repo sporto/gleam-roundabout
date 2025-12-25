@@ -39,6 +39,8 @@ This packages provides a generator which gives you:
 - A function for converting Route types to paths (`route_to_path`)
 - Helpers for generating route types and paths for each route
 
+This generator can be used in frontend or backend applications, at it only generates the route types and helper functions. You still need to write your own router using these types.
+
 ## Install
 
 ```sh
@@ -80,7 +82,28 @@ gleam run -m gen_routes
 
 See example output at `examples/src/generated/routes.gleam`
 
-## The order is important
+## Using this in your application
+
+After the routes have been generated, you can use them in your router or views like:
+
+```gleam
+import generated/routes
+
+pub fn handle(segments: List(String)) {
+    let maybe_route = routes.segments_to_route(segments)
+
+    case maybe_route {
+        Ok(routes.Home) -> handle_home()
+        Ok(routes.Order(id)) -> handle_order(id)
+        ...
+        Error(_) -> handle_not_found()
+    }
+} 
+```
+
+## Notes
+
+### The order is important
 
 If you have routes like:
 
@@ -91,6 +114,52 @@ If you have routes like:
 ]
 ```
 The first one will always match over the second one, make sure that literal routes are first.
+
+## Structure your routes to support your middleware
+
+If you want to use different middlewares at different levels of your application, you can structure your routes to support this.
+
+For example, having:
+
+```gleam
+const routes = [
+  Route(name: "home", path: [], sub: []),
+  Route(
+    name: "app",
+    path: [Lit("app")],
+    sub: [
+      // Will match /app/
+      Route(name: "dashboard", path: [], sub: []),
+    ],
+  ),
+]
+```
+
+Allows to apply some middleware for authentication like:
+
+```gleam
+import generated/routes
+import middleware
+import wisp
+
+pub fn handle(req: Request,, ctx: Context) {
+    let segments = wisp.path_segments(req)
+    let maybe_route = routes.segments_to_route(segments)
+
+    case maybe_route {
+        Ok(routes.Home) -> handle_home()
+        Ok(routes.App(sub)) -> {
+            use authenticated_context <- middleware.require_session(req, ctx)
+        
+            case sub {
+                routes.Dashboard -> handle_dashboard(authenticated_context)
+            }
+        }
+        ...
+        Error(_) -> handle_not_found()
+    }
+} 
+```
 
 ---
 
