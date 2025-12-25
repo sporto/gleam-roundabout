@@ -1,7 +1,7 @@
 import gleam/result
 import route_gen/parameter.{Int, name, new}
 
-pub fn parameter_valid_test() {
+pub fn valid_test() {
   assert new("client_id", Int) |> result.map(name) == Ok("client_id")
 
   assert new("clientId", Int) |> result.map(name) == Ok("client_id")
@@ -15,7 +15,7 @@ pub fn parameter_valid_test() {
   assert new("client-id", Int) |> result.map(name) == Ok("client_id")
 }
 
-pub fn parameter_invalid_test() {
+pub fn invalid_test() {
   assert new("", Int) == Error("Invalid parameter name ")
 
   assert new("client_@ID", Int) == Error("Invalid parameter name client_@ID")

@@ -1,7 +1,7 @@
 import gleam/result
 import route_gen/constant.{new, value}
 
-pub fn constant_valid_test() {
+pub fn valid_test() {
   assert new("clients") |> result.map(value) == Ok("clients")
 
   assert new("active_clients") |> result.map(value) == Ok("active_clients")
@@ -19,7 +19,7 @@ pub fn constant_valid_test() {
   assert new("active%20clients") |> result.map(value) == Ok("active%20clients")
 }
 
-pub fn constant_invalid_test() {
+pub fn invalid_test() {
   assert new("") == Error("Invalid constant value ")
 
   assert new("active clients") == Error("Invalid constant value active clients")
