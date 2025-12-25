@@ -4,6 +4,7 @@ import route_gen.{Int, Lit, Route, Str}
 import route_gen/constant
 import route_gen/node.{Info, Node, SegLit, SegParam}
 import route_gen/parameter
+import route_gen/type_name
 
 pub fn main() -> Nil {
   gleeunit.main()
@@ -25,21 +26,28 @@ pub fn parse_success_test() {
   let assert Ok(par_order_id) = parameter.new("orderId", parameter.Int)
 
   let expected =
-    Node(info: Info(name: "", path: []), sub: [
-      Node(info: Info(name: "home", path: []), sub: []),
+    Node(info: Info(name: type_name.unsafe(""), path: []), sub: [
+      Node(info: Info(name: type_name.unsafe("Home"), path: []), sub: []),
       Node(
-        info: Info(name: "client", path: [
+        info: Info(name: type_name.unsafe("Client"), path: [
           SegLit(constant.unsafe("clients")),
           SegParam(par_client_id),
         ]),
         sub: [
-          Node(info: Info(name: "show", path: []), sub: []),
+          Node(info: Info(name: type_name.unsafe("Show"), path: []), sub: []),
           Node(
-            info: Info(name: "orders", path: [SegLit(constant.unsafe("orders"))]),
+            info: Info(name: type_name.unsafe("Orders"), path: [
+              SegLit(constant.unsafe("orders")),
+            ]),
             sub: [
-              Node(info: Info(name: "index", path: []), sub: []),
               Node(
-                info: Info(name: "show", path: [SegParam(par_order_id)]),
+                info: Info(name: type_name.unsafe("Index"), path: []),
+                sub: [],
+              ),
+              Node(
+                info: Info(name: type_name.unsafe("Show"), path: [
+                  SegParam(par_order_id),
+                ]),
                 sub: [],
               ),
             ],

@@ -7,6 +7,7 @@ import route_gen/constant
 import route_gen/generate
 import route_gen/node
 import route_gen/parameter
+import route_gen/type_name
 import simplifile
 
 pub type Segment {
@@ -57,7 +58,8 @@ pub fn main(definitions: List(Route), output_path: String) {
 pub fn parse(definitions: List(Route)) -> Result(node.Node, String) {
   use sub <- result.try(parse_definitions("root", definitions))
 
-  let root = node.Node(sub:, info: node.Info(name: "", path: []))
+  let root =
+    node.Node(sub:, info: node.Info(name: type_name.unsafe(""), path: []))
 
   Ok(root)
 }
@@ -79,7 +81,7 @@ fn assert_no_duplicate_variant_names(
   nodes: List(node.Node),
 ) {
   let variant_names =
-    list.map(nodes, fn(item) { justin.snake_case(item.info.name) })
+    list.map(nodes, fn(item) { type_name.snake(item.info.name) })
 
   let as_set = set.from_list(variant_names)
 
@@ -122,9 +124,11 @@ fn parse_definition_info(input: Route) {
       }
     })
 
+  use name <- result.try(type_name.new(input.name))
+
   use path <- result.try(path_result)
 
-  node.Info(name: input.name, path:) |> Ok
+  node.Info(name:, path:) |> Ok
 }
 
 fn assert_no_duplicate_segment_names(node_name: String, segments: List(Segment)) {

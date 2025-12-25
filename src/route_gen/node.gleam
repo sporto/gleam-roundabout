@@ -1,15 +1,16 @@
 import route_gen/constant
-import route_gen/parameter.{type Parameter}
+import route_gen/parameter
+import route_gen/type_name
 
 @internal
 pub type Segment {
   SegLit(value: constant.Constant)
-  SegParam(name: Parameter)
+  SegParam(name: parameter.Parameter)
 }
 
 @internal
 pub type Info {
-  Info(name: String, path: List(Segment))
+  Info(name: type_name.TypeName, path: List(Segment))
 }
 
 @internal

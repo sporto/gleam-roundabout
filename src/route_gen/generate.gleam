@@ -6,6 +6,7 @@ import justin
 import route_gen/constant
 import route_gen/node.{type Info, type Node, type Segment, SegLit, SegParam}
 import route_gen/parameter
+import route_gen/type_name
 
 const indent = "  "
 
@@ -471,7 +472,8 @@ pub fn get_function_arguments(
           Error("")
         }
         SegParam(param) -> {
-          let new_name = info.name <> "_" <> parameter.name(param)
+          let new_name =
+            type_name.snake(info.name) <> "_" <> parameter.name(param)
 
           use new_param <- result.try(parameter.new(
             new_name,
@@ -490,7 +492,7 @@ pub fn get_function_arguments(
         SegLit(_) -> Error(Nil)
         SegParam(param) -> {
           let new_name = {
-            justin.snake_case(info.name) <> "_" <> parameter.name(param)
+            type_name.snake(info.name) <> "_" <> parameter.name(param)
           }
 
           use new_param <- result.try(
@@ -523,7 +525,7 @@ fn generate_route_helper_body(
       case segment {
         SegLit(_) -> Error(Nil)
         SegParam(param) -> {
-          { justin.snake_case(info.name) <> "_" <> parameter.name(param) }
+          { type_name.snake(info.name) <> "_" <> parameter.name(param) }
           |> Ok
         }
       }
@@ -569,7 +571,7 @@ fn get_function_name_do(
   ancestors: List(Info),
   info: Info,
 ) {
-  let next = list.prepend(collected, justin.snake_case(info.name))
+  let next = list.prepend(collected, type_name.snake(info.name))
 
   case ancestors {
     [next_ancestor, ..rest_ancestors] -> {
@@ -586,7 +588,7 @@ pub fn get_type_name(ancestors: List(Info), info: Info) -> String {
 }
 
 fn get_type_name_do(collected: List(String), ancestors: List(Info), info: Info) {
-  let next = list.prepend(collected, justin.pascal_case(info.name))
+  let next = list.prepend(collected, type_name.name(info.name))
 
   case ancestors {
     [next_ancestor, ..rest_ancestors] -> {

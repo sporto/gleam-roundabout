@@ -3,22 +3,34 @@ import route_gen/constant
 import route_gen/generate
 import route_gen/node.{Info, Node, SegLit, SegParam}
 import route_gen/parameter
+import route_gen/type_name
 
 fn root() {
-  Node(Info("", []), [
-    Node(Info("home", []), []),
-    Node(Info("clients", [SegLit(constant.unsafe("clients"))]), []),
+  Node(Info(type_name.unsafe(""), []), [
+    Node(Info(type_name.unsafe("Home"), []), []),
     Node(
-      Info("client", [
+      Info(type_name.unsafe("Clients"), [SegLit(constant.unsafe("clients"))]),
+      [],
+    ),
+    Node(
+      Info(type_name.unsafe("Client"), [
         SegLit(constant.unsafe("clients")),
         SegParam(parameter.unsafe_int("client_id")),
       ]),
       [
-        Node(Info("show", []), []),
-        Node(Info("orders", [SegLit(constant.unsafe("orders"))]), [
-          Node(Info("index", []), []),
-          Node(Info("show", [SegParam(parameter.unsafe_int("order_id"))]), []),
-        ]),
+        Node(Info(type_name.unsafe("Show"), []), []),
+        Node(
+          Info(type_name.unsafe("Orders"), [SegLit(constant.unsafe("orders"))]),
+          [
+            Node(Info(type_name.unsafe("Index"), []), []),
+            Node(
+              Info(type_name.unsafe("Show"), [
+                SegParam(parameter.unsafe_int("order_id")),
+              ]),
+              [],
+            ),
+          ],
+        ),
       ],
     ),
   ])
@@ -28,8 +40,8 @@ fn root() {
 pub fn get_type_name_test() {
   let actual =
     generate.get_type_name(
-      [Info(name: "client", path: [])],
-      Info(name: "simpleUser", path: []),
+      [Info(name: type_name.unsafe("Client"), path: [])],
+      Info(name: type_name.unsafe("SimpleUser"), path: []),
     )
 
   assert actual == "ClientSimpleUser"
@@ -38,8 +50,8 @@ pub fn get_type_name_test() {
 pub fn get_function_name_test() {
   let actual =
     generate.get_function_name(
-      [Info(name: "client", path: [])],
-      Info(name: "simpleUser", path: []),
+      [Info(name: type_name.unsafe("Client"), path: [])],
+      Info(name: type_name.unsafe("SimpleUser"), path: []),
     )
 
   assert actual == "client_simple_user"
@@ -56,13 +68,16 @@ pub fn generate_type_root_test() {
 }
 
 pub fn generate_type_child_test() {
-  let ancestors = [Info(name: "client", path: [])]
+  let ancestors = [Info(name: type_name.unsafe("Client"), path: [])]
 
   let assert Ok(par_id) = parameter.new("id", parameter.Int)
 
   let node =
-    Node(info: Info(name: "user", path: []), sub: [
-      Node(info: Info(name: "Show", path: [SegParam(par_id)]), sub: []),
+    Node(info: Info(name: type_name.unsafe("User"), path: []), sub: [
+      Node(
+        info: Info(name: type_name.unsafe("Show"), path: [SegParam(par_id)]),
+        sub: [],
+      ),
     ])
 
   let actual = generate.generate_type(ancestors, node)
