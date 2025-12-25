@@ -22,6 +22,8 @@ pub fn valid_test() {
 pub fn invalid_test() {
   assert new("") == Error("Invalid constant value ")
 
+  assert new("active/clients") == Error("Invalid constant value active/clients")
+
   assert new("active clients") == Error("Invalid constant value active clients")
 
   assert new("client!") == Error("Invalid constant value client!")

@@ -31,6 +31,8 @@ However, this doesn't provide a type safe way of constructing a path from type e
 User("12") -> "/users/12"
 ```
 
+See <https://www.kurz.net/posts/gleam-routing> for a more detailed explanation.
+
 This packages provides a generator which gives you:
 
 - A function for converting paths to Route types (`segments_to_route`)
@@ -96,10 +98,6 @@ Further documentation can be found at <https://hexdocs.pm/route_gen>.
 
 ## TODO
 
-- Allow segments to be kebab case
-- Handle segments with spaces
-- Add a valid segment type
-- Add a valid argument type
 - Format better
 - Generate example when pushing
 - Add test to ensure example type checks

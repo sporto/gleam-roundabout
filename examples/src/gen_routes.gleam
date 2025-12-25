@@ -3,6 +3,7 @@ import route_gen.{Int, Lit, Route, Str}
 const routes = [
   Route(name: "home", path: [], sub: []),
   Route(name: "profile", path: [Lit("profile"), Str("id")], sub: []),
+  Route(name: "my_orders", path: [Lit("my-orders")], sub: []),
   Route(name: "order", path: [Lit("orders"), Int("id")], sub: []),
   Route(
     name: "comment",

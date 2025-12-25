@@ -4,6 +4,7 @@ import gleam/result
 pub type Route {
   Home
   Profile(id: String)
+  MyOrders
   Order(id: Int)
   Comment(post_id: Int, comment_id: Int)
   User(id: Int, sub: UserRoute)
@@ -18,6 +19,7 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
   case segments {
     [] -> Home |> Ok
     ["profile", id] -> Profile(id) |> Ok
+    ["my-orders"] -> MyOrders |> Ok
     ["orders", id] -> with_int(id, fn(id) { Order(id) |> Ok })
     ["posts", post_id, "comments", comment_id] -> with_int(comment_id, fn(comment_id) { with_int(post_id, fn(post_id) { Comment(post_id, comment_id) |> Ok }) })
     ["users", id, ..rest] -> with_int(id, fn(id) { user_segments_to_route(rest) |> result.map(fn(sub) {
@@ -39,6 +41,7 @@ pub fn route_to_path(route: Route) -> String {
   case route {
     Home -> "/"
     Profile(id) -> "/" <> "profile/" <> id
+    MyOrders -> "/" <> "my-orders/"
     Order(id) -> "/" <> "orders/" <> int.to_string(id)
     Comment(post_id, comment_id) -> "/" <> "posts/" <> int.to_string(post_id) <> "comments/" <> int.to_string(comment_id)
     User(id, sub) -> "/" <> "users/" <> int.to_string(id) <> user_route_to_path(sub)
@@ -67,6 +70,15 @@ pub fn profile_route(profile_id: String) -> Route {
 
 pub fn profile_path(profile_id: String) -> String {
   profile_route(profile_id)
+  |> route_to_path
+}
+
+pub fn my_orders_route() -> Route {
+  MyOrders
+}
+
+pub fn my_orders_path() -> String {
+  my_orders_route()
   |> route_to_path
 }
 
