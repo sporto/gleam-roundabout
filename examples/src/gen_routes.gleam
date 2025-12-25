@@ -1,4 +1,4 @@
-import route_gen.{Int, Lit, Route, Str}
+import routegen.{Int, Lit, Route, Str}
 
 const routes = [
   Route(name: "home", path: [], sub: []),
@@ -21,5 +21,5 @@ const routes = [
 ]
 
 pub fn main() {
-  route_gen.main(routes, "src/generated/routes.gleam")
+  routegen.main(routes, "src/generated/routes.gleam")
 }

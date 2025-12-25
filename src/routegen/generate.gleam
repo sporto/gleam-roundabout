@@ -3,10 +3,10 @@ import gleam/option
 import gleam/result
 import gleam/string
 import justin
-import route_gen/constant
-import route_gen/node.{type Info, type Node, type Segment, SegLit, SegParam}
-import route_gen/parameter
-import route_gen/type_name
+import routegen/constant
+import routegen/node.{type Info, type Node, type Segment, SegLit, SegParam}
+import routegen/parameter
+import routegen/type_name
 
 const indent = "  "
 

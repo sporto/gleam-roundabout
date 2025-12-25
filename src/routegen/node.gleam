@@ -1,6 +1,6 @@
-import route_gen/constant
-import route_gen/parameter
-import route_gen/type_name
+import routegen/constant
+import routegen/parameter
+import routegen/type_name
 
 @internal
 pub type Segment {

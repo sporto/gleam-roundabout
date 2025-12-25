@@ -1,10 +1,10 @@
 import gleam/result
 import gleeunit
-import route_gen.{Int, Lit, Route, Str}
-import route_gen/constant
-import route_gen/node.{Info, Node, SegLit, SegParam}
-import route_gen/parameter
-import route_gen/type_name
+import routegen.{Int, Lit, Route, Str}
+import routegen/constant
+import routegen/node.{Info, Node, SegLit, SegParam}
+import routegen/parameter
+import routegen/type_name
 
 pub fn main() -> Nil {
   gleeunit.main()
@@ -56,7 +56,7 @@ pub fn parse_success_test() {
       ),
     ])
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert actual == Ok(expected)
 }
@@ -69,7 +69,7 @@ pub fn parse_fail_duplicate_route_names_test() {
     ]),
   ]
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert actual == Error("Route clients contain duplicate route names")
 }
@@ -81,7 +81,7 @@ pub fn parse_fail_invalid_route_name_test() {
     ]),
   ]
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert actual == Error("Invalid type name 123show")
 }
@@ -93,7 +93,7 @@ pub fn parse_fail_duplicate_segment_names_test() {
     ]),
   ]
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert actual == Error("Route show contain duplicate segment names")
 }
@@ -113,7 +113,7 @@ pub fn parse_success_duplicate_literal_segment_names_test() {
     ]),
   ]
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert result.is_ok(actual) == True
 }
@@ -125,7 +125,7 @@ pub fn parse_fail_invalid_param_name_test() {
     ]),
   ]
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert actual == Error("Invalid parameter name 1id")
 }
@@ -137,7 +137,7 @@ pub fn parse_fail_invalid_literal_test() {
     ]),
   ]
 
-  let actual = route_gen.parse(input)
+  let actual = routegen.parse(input)
 
   assert actual == Error("Invalid constant value ?lit")
 }

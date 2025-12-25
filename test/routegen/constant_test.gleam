@@ -1,5 +1,5 @@
 import gleam/result
-import route_gen/constant.{new, value}
+import routegen/constant.{new, value}
 
 pub fn valid_test() {
   assert new("clients") |> result.map(value) == Ok("clients")

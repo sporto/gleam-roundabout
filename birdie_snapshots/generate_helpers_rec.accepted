@@ -1,7 +1,7 @@
 ---
 version: 1.5.2
 title: generate_helpers_rec
-file: ./test/route_gen/generate_test.gleam
+file: ./test/routegen/generate_test.gleam
 test_name: generate_helpers_rec_test
 ---
 pub fn home_route() -> Route {

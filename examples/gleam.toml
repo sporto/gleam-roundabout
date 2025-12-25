@@ -3,7 +3,7 @@ version = "1.0.0"
 description = "Route generation example"
 
 [dependencies]
-route_gen = { path = ".." }
+routegen = { path = ".." }
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 
 [dev-dependencies]

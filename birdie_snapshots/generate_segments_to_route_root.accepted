@@ -1,7 +1,7 @@
 ---
 version: 1.5.2
 title: generate_segments_to_route_root
-file: ./test/route_gen/generate_test.gleam
+file: ./test/routegen/generate_test.gleam
 test_name: generate_segments_to_route_root_test
 ---
 pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {

@@ -1,7 +1,7 @@
-# route_gen
+# routegen
 
-[![Package Version](https://img.shields.io/hexpm/v/route_gen)](https://hex.pm/packages/route_gen)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/route_gen/)
+[![Package Version](https://img.shields.io/hexpm/v/routegen)](https://hex.pm/packages/routegen)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/routegen/)
 
 A route generator for Gleam.
 
@@ -42,7 +42,7 @@ This packages provides a generator which gives you:
 ## Install
 
 ```sh
-gleam add route_gen@1
+gleam add routegen@1
 ```
 
 ## Generating routes
@@ -50,7 +50,7 @@ gleam add route_gen@1
 Create a module in your project which defines the route definitions and calls the generator. e.g. in `src/gen_routes.gleam`
 
 ```gleam
-import route_gen.{Int, Lit, Route, Str}
+import routegen.{Int, Lit, Route, Str}
 
 const routes = [
   Route(name: "home", path: [], sub: []),
@@ -69,7 +69,7 @@ const routes = [
 ]
 
 pub fn main() -> Nil {
-    route_gen.main(routes, "src/generated/routes.gleam")
+    routegen.main(routes, "src/generated/routes.gleam")
 }
 ```
 
@@ -94,7 +94,7 @@ The first one will always match over the second one, make sure that literal rout
 
 ---
 
-Further documentation can be found at <https://hexdocs.pm/route_gen>.
+Further documentation can be found at <https://hexdocs.pm/routegen>.
 
 ## TODO
 
