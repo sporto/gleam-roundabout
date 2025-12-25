@@ -8,7 +8,7 @@ pub opaque type ParameterName {
 
 @internal
 pub fn new(input: String) -> Result(ParameterName, String) {
-  let assert Ok(re) = regexp.from_string("^[a-zA-Z][a-zA-Z0-9 _-]*$")
+  let assert Ok(re) = regexp.from_string("^[a-z][a-z0-9 _-]*$")
 
   let candidate = justin.snake_case(input)
 

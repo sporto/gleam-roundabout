@@ -1,6 +1,7 @@
 import gleam/result
 import gleeunit
 import route_gen.{Int, Lit, Route, Str}
+import route_gen/parameter_name
 import route_gen/types.{Info, Node, SegInt, SegLit}
 
 pub fn main() -> Nil {
@@ -19,19 +20,25 @@ pub fn parse_success_test() {
     ]),
   ]
 
+  let assert Ok(par_client_id) = parameter_name.new("clientId")
+  let assert Ok(par_order_id) = parameter_name.new("orderId")
+
   let expected =
     Node(info: Info(name: "", path: []), sub: [
       Node(info: Info(name: "home", path: []), sub: []),
       Node(
         info: Info(name: "client", path: [
           SegLit("clients"),
-          SegInt("clientId"),
+          SegInt(par_client_id),
         ]),
         sub: [
           Node(info: Info(name: "show", path: []), sub: []),
           Node(info: Info(name: "orders", path: [SegLit("orders")]), sub: [
             Node(info: Info(name: "index", path: []), sub: []),
-            Node(info: Info(name: "show", path: [SegInt("orderId")]), sub: []),
+            Node(
+              info: Info(name: "show", path: [SegInt(par_order_id)]),
+              sub: [],
+            ),
           ]),
         ],
       ),

@@ -1,7 +1,9 @@
 import gleam/list
 import gleam/option
+import gleam/result
 import gleam/string
 import justin
+import route_gen/parameter_name
 import route_gen/types.{type Info, type Node, SegInt, SegLit, SegStr}
 
 const indent = "  "
@@ -93,8 +95,8 @@ fn generate_type_variant(ancestors: List(Info), node: Node) {
 
 fn generate_type_variant_param(segment: types.Segment) {
   case segment {
-    SegInt(name) -> Ok(justin.snake_case(name) <> ": Int")
-    SegStr(name) -> Ok(justin.snake_case(name) <> ": String")
+    SegInt(name) -> Ok(parameter_name.to_string(name) <> ": Int")
+    SegStr(name) -> Ok(parameter_name.to_string(name) <> ": String")
     SegLit(_) -> Error(Nil)
   }
 }
@@ -172,8 +174,8 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     |> list.map(fn(segment) {
       case segment {
         SegLit(name) -> "\"" <> justin.snake_case(name) <> "\""
-        SegStr(name) -> justin.snake_case(name)
-        SegInt(name) -> justin.snake_case(name)
+        SegStr(name) -> parameter_name.to_string(name)
+        SegInt(name) -> parameter_name.to_string(name)
       }
     })
     |> string.join(", ")
@@ -190,8 +192,8 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
     |> list.filter_map(fn(seg) {
       case seg {
         SegLit(_) -> Error(Nil)
-        SegStr(name) -> Ok(justin.snake_case(name))
-        SegInt(name) -> Ok(justin.snake_case(name))
+        SegStr(name) -> Ok(parameter_name.to_string(name))
+        SegInt(name) -> Ok(parameter_name.to_string(name))
       }
     })
     |> fn(params) {
@@ -230,9 +232,9 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
         SegStr(_) -> acc
         SegInt(name) -> {
           "with_int("
-          <> justin.snake_case(name)
+          <> parameter_name.to_string(name)
           <> ", fn("
-          <> justin.snake_case(name)
+          <> parameter_name.to_string(name)
           <> ") { "
           <> acc
           <> " })"
@@ -300,8 +302,16 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
     |> list.filter_map(fn(seg) {
       case seg {
         SegLit(_) -> Error(Nil)
-        SegStr(name) -> Ok(justin.snake_case(name))
-        SegInt(name) -> Ok(justin.snake_case(name))
+        SegStr(name) -> {
+          name
+          |> parameter_name.to_string
+          |> Ok
+        }
+        SegInt(name) -> {
+          name
+          |> parameter_name.to_string
+          |> Ok
+        }
       }
     })
     |> fn(items) {
@@ -321,8 +331,9 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) {
     |> list.map(fn(seg) {
       case seg {
         SegLit(name) -> "\"" <> name <> "/\""
-        SegStr(name) -> justin.snake_case(name)
-        SegInt(name) -> "int.to_string(" <> justin.snake_case(name) <> ")"
+        SegStr(name) -> parameter_name.to_string(name)
+        SegInt(name) ->
+          "int.to_string(" <> parameter_name.to_string(name) <> ")"
       }
     })
     |> string.join(" <> ")
@@ -380,8 +391,15 @@ fn generate_route_helper(ancestors: List(Info), cont: Node) {
     |> list.filter_map(fn(segment) {
       use type_name <- require_segment_type_name(segment)
 
-      { justin.snake_case(segment.name) <> ": " <> type_name }
-      |> Ok
+      case segment {
+        SegLit(_) -> Error(Nil)
+        SegInt(name) -> {
+          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
+        }
+        SegStr(name) -> {
+          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
+        }
+      }
     })
     |> string.join(", ")
 
@@ -413,14 +431,27 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) {
     |> list.filter_map(fn(segment) {
       use type_name <- require_segment_type_name(segment)
 
-      { justin.snake_case(segment.name) <> ": " <> type_name }
-      |> Ok
+      case segment {
+        SegLit(_) -> Error(Nil)
+        SegInt(name) -> {
+          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
+        }
+        SegStr(name) -> {
+          { parameter_name.to_string(name) <> ": " <> type_name } |> Ok
+        }
+      }
     })
     |> string.join(", ")
 
   let callee_arguments =
     function_arguments
-    |> list.map(fn(segment) { justin.snake_case(segment.name) })
+    |> list.filter_map(fn(segment) {
+      case segment {
+        SegLit(_) -> Error(Nil)
+        SegInt(name) -> Ok(parameter_name.to_string(name))
+        SegStr(name) -> Ok(parameter_name.to_string(name))
+      }
+    })
     |> string.join(", ")
 
   let body =
@@ -451,25 +482,59 @@ pub fn get_function_arguments(
   // First we want to namespace the given acc with this info
   let current_segments =
     acc
-    |> list.map(fn(segment) {
-      let new_name = info.name <> "_" <> segment.name
-
+    |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> SegLit(new_name)
-        SegStr(_) -> SegStr(new_name)
-        SegInt(_) -> SegInt(new_name)
+        SegLit(name) -> SegLit(info.name <> "_" <> name) |> Ok
+        SegStr(name) -> {
+          let new_name = info.name <> "_" <> parameter_name.to_string(name)
+
+          use new_name <- result.try(parameter_name.new(new_name))
+
+          SegStr(new_name) |> Ok
+        }
+        SegInt(name) -> {
+          let new_name = info.name <> "_" <> parameter_name.to_string(name)
+
+          use new_name <- result.try(parameter_name.new(new_name))
+
+          SegInt(new_name) |> Ok
+        }
       }
     })
 
   let new_segments =
     info.path
     |> list.filter_map(fn(segment) {
-      let new_name = info.name <> "_" <> segment.name
-
       case segment {
         SegLit(_) -> Error(Nil)
-        SegStr(_) -> Ok(SegStr(new_name))
-        SegInt(_) -> Ok(SegInt(new_name))
+        SegStr(name) -> {
+          let new_name = {
+            justin.snake_case(info.name)
+            <> "_"
+            <> parameter_name.to_string(name)
+          }
+
+          use new_name <- result.try(
+            parameter_name.new(new_name)
+            |> result.replace_error(Nil),
+          )
+
+          Ok(SegStr(new_name))
+        }
+        SegInt(name) -> {
+          let new_name = {
+            justin.snake_case(info.name)
+            <> "_"
+            <> parameter_name.to_string(name)
+          }
+
+          use new_name <- result.try(
+            parameter_name.new(new_name)
+            |> result.replace_error(Nil),
+          )
+
+          Ok(SegInt(new_name))
+        }
       }
     })
 
@@ -490,12 +555,24 @@ fn generate_route_helper_body(
   let params =
     info.path
     |> list.filter_map(fn(segment) {
-      let name = justin.snake_case(info.name <> "_" <> segment.name)
-
       case segment {
         SegLit(_) -> Error(Nil)
-        SegStr(_) -> Ok(name)
-        SegInt(_) -> Ok(name)
+        SegStr(name) -> {
+          {
+            justin.snake_case(info.name)
+            <> "_"
+            <> parameter_name.to_string(name)
+          }
+          |> Ok
+        }
+        SegInt(name) -> {
+          {
+            justin.snake_case(info.name)
+            <> "_"
+            <> parameter_name.to_string(name)
+          }
+          |> Ok
+        }
       }
     })
     |> fn(entries) {

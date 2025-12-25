@@ -1,27 +1,26 @@
 import birdie
+import gleam/result
 import route_gen/generate
+import route_gen/parameter_name
 import route_gen/types.{Info, Node, SegInt, SegLit}
 
-const root = Node(
-  Info("", []),
-  [
+fn root() {
+  use par_client_id <- result.try(parameter_name.new("clientId"))
+  use par_order_id <- result.try(parameter_name.new("orderId"))
+
+  Node(Info("", []), [
     Node(Info("home", []), []),
     Node(Info("clients", [SegLit("clients")]), []),
-    Node(
-      Info("client", [SegLit("clients"), SegInt("clientId")]),
-      [
-        Node(Info("show", []), []),
-        Node(
-          Info("orders", [SegLit("orders")]),
-          [
-            Node(Info("index", []), []),
-            Node(Info("show", [SegInt("orderId")]), []),
-          ],
-        ),
-      ],
-    ),
-  ],
-)
+    Node(Info("client", [SegLit("clients"), SegInt(par_client_id)]), [
+      Node(Info("show", []), []),
+      Node(Info("orders", [SegLit("orders")]), [
+        Node(Info("index", []), []),
+        Node(Info("show", [SegInt(par_order_id)]), []),
+      ]),
+    ]),
+  ])
+  |> Ok
+}
 
 pub fn get_type_name_test() {
   let actual =
@@ -46,6 +45,7 @@ pub fn get_function_name_test() {
 /// generate_type
 ///
 pub fn generate_type_root_test() {
+  let assert Ok(root) = root()
   let actual = generate.generate_type([], root)
 
   actual
@@ -55,9 +55,11 @@ pub fn generate_type_root_test() {
 pub fn generate_type_child_test() {
   let ancestors = [Info(name: "client", path: [])]
 
+  let assert Ok(par_id) = parameter_name.new("id")
+
   let node =
     Node(info: Info(name: "user", path: []), sub: [
-      Node(info: Info(name: "Show", path: [SegInt("id")]), sub: []),
+      Node(info: Info(name: "Show", path: [SegInt(par_id)]), sub: []),
     ])
 
   let actual = generate.generate_type(ancestors, node)
@@ -67,6 +69,7 @@ pub fn generate_type_child_test() {
 }
 
 pub fn generate_type_rec_test() {
+  let assert Ok(root) = root()
   let assert Ok(actual) = generate.generate_type_rec([], root)
 
   actual
@@ -76,6 +79,7 @@ pub fn generate_type_rec_test() {
 /// generate_segments_to_route
 ///
 pub fn generate_segments_to_route_root_test() {
+  let assert Ok(root) = root()
   let actual = generate.generate_segments_to_route([], root)
 
   actual
@@ -83,6 +87,7 @@ pub fn generate_segments_to_route_root_test() {
 }
 
 pub fn generate_segments_to_route_rec_test() {
+  let assert Ok(root) = root()
   let assert Ok(actual) = generate.generate_segments_to_route_rec([], root)
 
   actual
@@ -92,6 +97,7 @@ pub fn generate_segments_to_route_rec_test() {
 /// generate_route_to_path
 ///
 pub fn generate_route_to_path_root_test() {
+  let assert Ok(root) = root()
   let actual = generate.generate_route_to_path([], root)
 
   actual
@@ -99,6 +105,7 @@ pub fn generate_route_to_path_root_test() {
 }
 
 pub fn generate_route_to_path_rec_test() {
+  let assert Ok(root) = root()
   let assert Ok(actual) = generate.generate_route_to_path_rec([], root)
 
   actual
@@ -106,6 +113,7 @@ pub fn generate_route_to_path_rec_test() {
 }
 
 pub fn generate_helpers_rec_test() {
+  let assert Ok(root) = root()
   let actual = generate.generate_helpers_rec([], root)
 
   actual
