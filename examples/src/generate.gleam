@@ -20,5 +20,5 @@ const routes = [
 ]
 
 pub fn main() {
-  echo route_gen.main(routes, "src/generated/routes.gleam")
+  route_gen.main(routes, "src/generated/routes.gleam")
 }
