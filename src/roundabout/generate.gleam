@@ -8,8 +8,6 @@ import roundabout/node.{type Info, type Node, type Segment, SegLit, SegParam}
 import roundabout/parameter
 import roundabout/type_name
 
-const indent = "  "
-
 const block_break = "\n\n"
 
 /// Join two strings with <>
@@ -17,6 +15,11 @@ const block_break = "\n\n"
 fn string_join() {
   doc.flex_break(" ", "")
   |> doc.append(doc.from_string("<> "))
+}
+
+fn pipe_join() {
+  doc.flex_break(" ", "")
+  |> doc.append(doc.from_string("|> "))
 }
 
 fn case_arrow() {
@@ -159,7 +162,9 @@ pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> Document
   let segments_to_route_cases =
     node.sub
     |> list.map(generate_segments_to_route_case(next_ancestors, _))
-    |> string.join("\n")
+    |> doc.join(doc.line)
+    |> doc.append(doc.line)
+    |> doc.append(doc.from_string("_ -> Error(Nil)"))
 
   let function_name =
     [get_function_name(ancestors, node.info), "segments_to_route"]
@@ -173,40 +178,59 @@ pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> Document
     False -> ""
   }
 
-  let out =
-    pub_prefix
-    <> "fn "
-    <> function_name
-    <> "(segments: List(String)) -> Result("
-    <> type_name
-    <> "Route, Nil) {\n"
-    <> "  case segments {\n"
-    <> segments_to_route_cases
-    <> "\n    _ -> Error(Nil)\n"
-    <> "  }\n"
-    <> "}"
-    <> block_break
-
-  doc.from_string(out)
+  doc.concat([
+    doc.from_string(
+      pub_prefix
+      <> "fn "
+      <> function_name
+      <> "(segments: List(String)) -> Result("
+      <> type_name
+      <> "Route, Nil) {",
+    ),
+    doc.nest_docs(
+      [
+        doc.line,
+        doc.from_string("case segments {"),
+        doc.nest_docs(
+          [
+            doc.line,
+            segments_to_route_cases,
+          ],
+          2,
+        ),
+        doc.line,
+        doc.from_string("}"),
+      ],
+      2,
+    ),
+    doc.line,
+    doc.from_string("}"),
+    doc.lines(2),
+  ])
 }
 
-fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
+fn generate_segments_to_route_case(
+  ancestors: List(Info),
+  node: Node,
+) -> Document {
   let matched_params =
     node.info.path
     |> list.map(fn(segment) {
       case segment {
-        SegLit(value) -> "\"" <> constant.value(value) <> "\""
-        SegParam(param) -> parameter.name(param)
+        SegLit(value) -> doc.from_string("\"" <> constant.value(value) <> "\"")
+        SegParam(param) -> doc.from_string(parameter.name(param))
       }
     })
-    |> string.join(", ")
+    |> fn(self) {
+      case list.is_empty(node.sub) {
+        True -> self
+        False -> list.append(self, [doc.from_string("..rest")])
+      }
+    }
+    |> doc.join(doc.from_string(", "))
 
-  let matched_params = case list.is_empty(node.sub) {
-    True -> matched_params
-    False -> matched_params <> ", ..rest"
-  }
-
-  let left = "[" <> matched_params <> "]"
+  let left =
+    doc.concat([doc.from_string("["), matched_params, doc.from_string("]")])
 
   let match_right_inner =
     node.info.path
@@ -233,15 +257,30 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
 
   let right = case list.is_empty(node.sub) {
     True -> {
-      get_type_name(ancestors, node.info) <> match_right_inner <> " |> Ok"
+      doc.from_string(get_type_name(ancestors, node.info) <> match_right_inner)
+      |> doc.append(pipe_join())
+      |> doc.append(doc.from_string("Ok"))
     }
     False -> {
       let fn_name =
         get_function_name(ancestors, node.info) <> "_segments_to_route"
 
-      fn_name <> "(rest) |> result.map(fn(sub) {
-" <> get_type_name(ancestors, node.info) <> match_right_inner <> "
-        })"
+      doc.concat([
+        doc.from_string(fn_name <> "(rest)"),
+        pipe_join(),
+        doc.from_string("result.map(fn(sub) {"),
+        doc.nest_docs(
+          [
+            doc.line,
+            doc.from_string(
+              get_type_name(ancestors, node.info) <> match_right_inner,
+            ),
+          ],
+          2,
+        ),
+        doc.line,
+        doc.from_string("})"),
+      ])
     }
   }
 
@@ -255,14 +294,30 @@ fn generate_segments_to_route_case(ancestors: List(Info), node: Node) {
             parameter.Int -> {
               let name = parameter.name(param)
 
-              "with_int(" <> name <> ", fn(" <> name <> ") { " <> acc <> " })"
+              doc.concat([
+                doc.from_string(
+                  "with_int(" <> name <> ", fn(" <> name <> ") { ",
+                ),
+                doc.nest_docs(
+                  [
+                    doc.line,
+                    acc,
+                  ],
+                  2,
+                ),
+                doc.line,
+                doc.from_string(" })"),
+              ])
             }
           }
         }
       }
     })
 
-  indent <> indent <> left <> " -> " <> right
+  left
+  |> doc.append(case_arrow())
+  |> doc.append(right)
+  |> doc.nest(2)
 }
 
 @internal
