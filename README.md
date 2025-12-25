@@ -11,17 +11,17 @@ Gleam gives us a great way of matching paths via pattern matching:
 
 ```gleam
 pub type Route {
-    Users
-    User(id: String)
-    NotFound
+  Users
+  User(id: String)
+  NotFound
 }
 
 pub fn get_route(segments: List(String)) {
-    case segments {
-        Ok(["users"]) -> Users
-        Ok(["users", id]) -> User(id)
-        _ -> NotFound
-     }
+  case segments {
+    ["users"] -> Users
+    ["users", id] -> User(id)
+    _ -> NotFound
+  }
 }
 ```
 
@@ -90,14 +90,14 @@ After the routes have been generated, you can use them in your router or views l
 import generated/routes
 
 pub fn handle(segments: List(String)) {
-    let maybe_route = routes.segments_to_route(segments)
+  let maybe_route = routes.segments_to_route(segments)
 
-    case maybe_route {
-        Ok(routes.Home) -> handle_home()
-        Ok(routes.Order(id)) -> handle_order(id)
-        ...
-        Error(_) -> handle_not_found()
-    }
+  case maybe_route {
+    Ok(routes.Home) -> handle_home()
+    Ok(routes.Order(id)) -> handle_order(id)
+    ...
+    Error(_) -> handle_not_found()
+  }
 } 
 ```
 
@@ -109,8 +109,8 @@ If you have routes like:
 
 ```gleam
 [
-    Route(name: "show", path: [Str("id")], sub: []),
-    Route(name: "invite", path: [Lit("invite")], sub: []),
+  Route(name: "show", path: [Str("id")], sub: []),
+  Route(name: "invite", path: [Lit("invite")], sub: []),
 ]
 ```
 The first one will always match over the second one, make sure that literal routes are first.
@@ -143,21 +143,21 @@ import middleware
 import wisp
 
 pub fn handle(req: Request,, ctx: Context) {
-    let segments = wisp.path_segments(req)
-    let maybe_route = routes.segments_to_route(segments)
+  let segments = wisp.path_segments(req)
+  let maybe_route = routes.segments_to_route(segments)
 
-    case maybe_route {
-        Ok(routes.Home) -> handle_home()
-        Ok(routes.App(sub)) -> {
-            use authenticated_context <- middleware.require_session(req, ctx)
-        
-            case sub {
-                routes.Dashboard -> handle_dashboard(authenticated_context)
-            }
-        }
-        ...
-        Error(_) -> handle_not_found()
+  case maybe_route {
+    Ok(routes.Home) -> handle_home()
+    Ok(routes.App(sub)) -> {
+      use authenticated_context <- middleware.require_session(req, ctx)
+    
+      case sub {
+        routes.Dashboard -> handle_dashboard(authenticated_context)
+      }
     }
+    ...
+    Error(_) -> handle_not_found()
+  }
 } 
 ```
 
@@ -167,6 +167,5 @@ Further documentation can be found at <https://hexdocs.pm/roundabout>.
 
 ## TODO
 
-- Format better
 - Generate example when pushing
 - Add test to ensure example type checks
