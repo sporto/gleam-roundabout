@@ -28,4 +28,5 @@ pub fn route_round_trips_test() {
   test_roundtrip("/orders/12", routes.Order(12))
   test_roundtrip("/posts/1/comments/2", routes.Comment(1, 2))
   test_roundtrip("/users/1", routes.User(1, routes.UserShow))
+  test_roundtrip("/users/1/new", routes.User(1, routes.UserActivate))
 }

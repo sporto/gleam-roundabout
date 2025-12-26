@@ -7,22 +7,24 @@ test_name: generate_route_to_path_rec_test
 pub fn route_to_path(route: Route) -> String {
   case route {
     Home -> "/"
-    Clients -> "/" <> "clients/"
+    Clients -> "/" <> "clients"
     Client(client_id, sub) ->
-      "/" <> "clients/" <> int.to_string(client_id) <> client_route_to_path(sub)
+      "/"
+      <> "clients"
+      <> "/" <> int.to_string(client_id) <> client_route_to_path(sub)
   }
 }
 
 fn client_route_to_path(route: ClientRoute) -> String {
   case route {
-    ClientShow -> "/"
-    ClientOrders(sub) -> "/" <> "orders/" <> client_orders_route_to_path(sub)
+    ClientShow -> ""
+    ClientOrders(sub) -> "/" <> "orders" <> client_orders_route_to_path(sub)
   }
 }
 
 fn client_orders_route_to_path(route: ClientOrdersRoute) -> String {
   case route {
-    ClientOrdersIndex -> "/"
+    ClientOrdersIndex -> ""
     ClientOrdersShow(order_id) -> "/" <> int.to_string(order_id)
   }
 }

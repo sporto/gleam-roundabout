@@ -15,7 +15,7 @@ const routes = [
     path: [Lit("users"), Int("id")],
     sub: [
       Route(name: "show", path: [], sub: []),
-      Route(name: "new", path: [Lit("new")], sub: []),
+      Route(name: "activate", path: [Lit("new")], sub: []),
     ],
   ),
 ]

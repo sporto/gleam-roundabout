@@ -15,7 +15,7 @@ pub type Route {
 
 pub type UserRoute {
   UserShow
-  UserNew
+  UserActivate
 }
 
 pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
@@ -44,7 +44,7 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
 fn user_segments_to_route(segments: List(String)) -> Result(UserRoute, Nil) {
   case segments {
     [] -> UserShow |> Ok
-    ["new"] -> UserNew |> Ok
+    ["new"] -> UserActivate |> Ok
     _ -> Error(Nil)
   }
 }
@@ -52,22 +52,24 @@ fn user_segments_to_route(segments: List(String)) -> Result(UserRoute, Nil) {
 pub fn route_to_path(route: Route) -> String {
   case route {
     Home -> "/"
-    Profile(id) -> "/" <> "profile/" <> id
-    MyOrders -> "/" <> "my-orders/"
-    Order(id) -> "/" <> "orders/" <> int.to_string(id)
+    Profile(id) -> "/" <> "profile" <> "/" <> id
+    MyOrders -> "/" <> "my-orders"
+    Order(id) -> "/" <> "orders" <> "/" <> int.to_string(id)
     Comment(post_id, comment_id) ->
       "/"
-      <> "posts/"
-      <> int.to_string(post_id) <> "comments/" <> int.to_string(comment_id)
+      <> "posts"
+      <> "/"
+      <> int.to_string(post_id)
+      <> "/" <> "comments" <> "/" <> int.to_string(comment_id)
     User(id, sub) ->
-      "/" <> "users/" <> int.to_string(id) <> user_route_to_path(sub)
+      "/" <> "users" <> "/" <> int.to_string(id) <> user_route_to_path(sub)
   }
 }
 
 fn user_route_to_path(route: UserRoute) -> String {
   case route {
-    UserShow -> "/"
-    UserNew -> "/" <> "new/"
+    UserShow -> ""
+    UserActivate -> "/" <> "new"
   }
 }
 
@@ -119,12 +121,12 @@ pub fn user_show_path(user_id: Int) -> String {
   user_show_route(user_id) |> route_to_path
 }
 
-pub fn user_new_route(user_id: Int) -> Route {
-  UserNew |> User(user_id, _)
+pub fn user_activate_route(user_id: Int) -> Route {
+  UserActivate |> User(user_id, _)
 }
 
-pub fn user_new_path(user_id: Int) -> String {
-  user_new_route(user_id) |> route_to_path
+pub fn user_activate_path(user_id: Int) -> String {
+  user_activate_route(user_id) |> route_to_path
 }
 
 

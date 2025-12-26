@@ -27,11 +27,12 @@ pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) -> Document
 
 @internal
 pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> Document {
+  let is_root = list.is_empty(ancestors)
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let route_to_path_cases =
     node.sub
-    |> list.map(generate_route_to_path_case(next_ancestors, _))
+    |> list.map(generate_route_to_path_case(is_root, next_ancestors, _))
     |> doc.join(doc.line)
 
   let function_name =
@@ -75,7 +76,11 @@ pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> Document {
   ])
 }
 
-fn generate_route_to_path_case(ancestors: List(Info), node: Node) -> Document {
+fn generate_route_to_path_case(
+  is_root: Bool,
+  ancestors: List(Info),
+  node: Node,
+) -> Document {
   let variant_params =
     node.info.path
     |> list.filter_map(fn(seg) {
@@ -100,7 +105,7 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) -> Document {
     False -> "(" <> string.join(variant_params, ", ") <> ")"
   }
 
-  let path = generate_route_to_path_case_right(ancestors, node)
+  let path = generate_route_to_path_case_right(is_root, ancestors, node)
 
   doc.from_string(
     common.get_type_name(ancestors, node.info) <> variant_params_str,
@@ -111,6 +116,7 @@ fn generate_route_to_path_case(ancestors: List(Info), node: Node) -> Document {
 }
 
 fn generate_route_to_path_case_right(
+  is_root: Bool,
   ancestors: List(Info),
   node: Node,
 ) -> Document {
@@ -142,7 +148,19 @@ fn generate_route_to_path_case_right(
       |> doc.append(common.string_join()),
     )
 
-  doc.from_string(common.forward_slash)
+  doc.empty
+  |> fn(self) {
+    case is_root || has_segments {
+      True ->
+        self
+        |> doc.append(doc.from_string(common.forward_slash))
+      False ->
+        self
+        |> doc.append(doc.from_string(
+          common.double_quote <> common.double_quote,
+        ))
+    }
+  }
   // Add the segments
   |> fn(self) {
     case has_segments {
