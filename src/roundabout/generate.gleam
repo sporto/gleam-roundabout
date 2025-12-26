@@ -31,6 +31,7 @@ pub fn generate_header() {
 ////
 "
   |> doc.from_string
+  |> doc.append(doc.line)
 }
 
 @internal

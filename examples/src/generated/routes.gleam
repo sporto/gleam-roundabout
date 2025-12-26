@@ -23,16 +23,20 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
     [] -> Home |> Ok
     ["profile", id] -> Profile(id) |> Ok
     ["my-orders"] -> MyOrders |> Ok
-    ["orders", id] -> with_int(id, fn(id) { Order(id) |> Ok })
+    ["orders", id] -> with_int(id, fn(id) { 
+        Order(id) |> Ok
+       })
     ["posts", post_id, "comments", comment_id] ->
-      with_int(comment_id, fn(comment_id) {
-        with_int(post_id, fn(post_id) { Comment(post_id, comment_id) |> Ok })
-      })
-    ["users", id, ..rest] ->
-      with_int(id, fn(id) {
-        user_segments_to_route(rest)
-        |> result.map(fn(sub) { User(id, sub) })
-      })
+      with_int(comment_id, fn(comment_id) { 
+        with_int(post_id, fn(post_id) { 
+          Comment(post_id, comment_id) |> Ok
+         })
+       })
+    ["users", id, ..rest] -> with_int(id, fn(id) { 
+        user_segments_to_route(rest) |> result.map(fn(sub) {
+          User(id, sub)
+        })
+       })
     _ -> Error(Nil)
   }
 }
@@ -54,9 +58,7 @@ pub fn route_to_path(route: Route) -> String {
     Comment(post_id, comment_id) ->
       "/"
       <> "posts/"
-      <> int.to_string(post_id)
-      <> "comments/"
-      <> int.to_string(comment_id)
+      <> int.to_string(post_id) <> "comments/" <> int.to_string(comment_id)
     User(id, sub) ->
       "/" <> "users/" <> int.to_string(id) <> user_route_to_path(sub)
   }
@@ -125,7 +127,8 @@ pub fn user_new_path(user_id: Int) -> String {
   user_new_route(user_id) |> route_to_path
 }
 
+
 fn with_int(str: String, fun) {
-  int.parse(str)
-  |> result.try(fun)
+    int.parse(str)
+    |> result.try(fun)
 }
