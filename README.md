@@ -55,17 +55,17 @@ Create a module in your project which defines the route definitions and calls th
 import roundabout.{Int, Lit, Route, Str}
 
 const routes = [
-  Route(name: "home", path: [], sub: []),
+  Route(name: "home", path: [], children: []),
   // Will match an individual order e.g. /orders/123
-  Route(name: "order", path: [Lit("orders"), Int("id")], sub: []),
+  Route(name: "order", path: [Lit("orders"), Int("id")], children: []),
   Route(
     name: "user",
     path: [Lit("users"), Int("id")],
-    sub: [
+    children: [
       // Will match /users/123
-      Route(name: "show", path: [], sub: []),
+      Route(name: "show", path: [], children: []),
       // Will match /users/123/delete
-      Route(name: "delete", path: [Lit("delete")], sub: []),
+      Route(name: "delete", path: [Lit("delete")], children: []),
     ],
   ),
 ]
@@ -109,8 +109,8 @@ If you have routes like:
 
 ```gleam
 [
-  Route(name: "show", path: [Str("id")], sub: []),
-  Route(name: "invite", path: [Lit("invite")], sub: []),
+  Route(name: "show", path: [Str("id")], children: []),
+  Route(name: "invite", path: [Lit("invite")], children: []),
 ]
 ```
 The first one will always match over the second one, make sure that literal routes are first.
@@ -123,13 +123,13 @@ For example, having:
 
 ```gleam
 const routes = [
-  Route(name: "home", path: [], sub: []),
+  Route(name: "home", path: [], children: []),
   Route(
     name: "app",
     path: [Lit("app")],
-    sub: [
+    children: [
       // Will match /app/
-      Route(name: "dashboard", path: [], sub: []),
+      Route(name: "dashboard", path: [], children: []),
     ],
   ),
 ]

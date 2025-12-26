@@ -10,7 +10,7 @@ pub fn get_branch_result_root_empty_test() {
   assert subject.get_branch_result(
       True,
       [],
-      Node(Info(type_name.unsafe("Home"), path: []), sub: []),
+      Node(Info(type_name.unsafe("Home"), path: []), children: []),
     )
     |> doc.to_string(80)
     == "\"/\""
@@ -20,7 +20,7 @@ pub fn get_branch_result_not_root_empty_test() {
   assert subject.get_branch_result(
       False,
       [],
-      Node(Info(type_name.unsafe("Dashboard"), path: []), sub: []),
+      Node(Info(type_name.unsafe("Dashboard"), path: []), children: []),
     )
     |> doc.to_string(80)
     == "\"\""
@@ -34,7 +34,7 @@ pub fn get_branch_result_root_with_path_test() {
         Info(type_name.unsafe("Users"), path: [
           node.SegLit(constant.unsafe("users")),
         ]),
-        sub: [],
+        children: [],
       ),
     )
     |> doc.to_string(80)
@@ -45,8 +45,8 @@ pub fn get_branch_result_root_with_sub_test() {
   assert subject.get_branch_result(
       True,
       [],
-      Node(Info(type_name.unsafe("Users"), path: []), sub: [
-        Node(Info(type_name.unsafe("Show"), path: []), sub: []),
+      Node(Info(type_name.unsafe("Users"), path: []), children: [
+        Node(Info(type_name.unsafe("Show"), path: []), children: []),
       ]),
     )
     |> doc.to_string(80)

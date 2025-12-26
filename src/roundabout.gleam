@@ -23,7 +23,7 @@ pub type Segment {
 }
 
 pub type Route {
-  Route(name: String, path: List(Segment), sub: List(Route))
+  Route(name: String, path: List(Segment), children: List(Route))
 }
 
 /// Generate the routes file
@@ -73,10 +73,10 @@ pub fn main(definitions: List(Route), output_path: String) {
 
 @internal
 pub fn parse(definitions: List(Route)) -> Result(node.Node, String) {
-  use sub <- result.try(parse_definitions("root", definitions))
+  use children <- result.try(parse_definitions("root", definitions))
 
   let root =
-    node.Node(sub:, info: node.Info(name: type_name.unsafe(""), path: []))
+    node.Node(children:, info: node.Info(name: type_name.unsafe(""), path: []))
 
   Ok(root)
 }
@@ -111,9 +111,12 @@ fn assert_no_duplicate_variant_names(
 fn parse_definition(definition: Route) {
   use info <- result.try(parse_definition_info(definition))
 
-  use sub <- result.try(parse_definitions(definition.name, definition.sub))
+  use children <- result.try(parse_definitions(
+    definition.name,
+    definition.children,
+  ))
 
-  node.Node(info:, sub:) |> Ok
+  node.Node(info:, children:) |> Ok
 }
 
 fn parse_definition_info(input: Route) {

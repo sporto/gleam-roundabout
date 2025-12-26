@@ -11,14 +11,16 @@ import roundabout/internal/type_name
 
 pub fn generate_helpers_rec(ancestors: List(Info), node: Node) -> Document {
   // Only leaf nodes are generated
-  case list.is_empty(node.sub) {
+  case list.is_empty(node.children) {
     True -> {
       generate_helpers(ancestors, node)
     }
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
-      list.map(node.sub, fn(node) { generate_helpers_rec(next_ancestors, node) })
+      list.map(node.children, fn(node) {
+        generate_helpers_rec(next_ancestors, node)
+      })
       |> doc.concat
     }
   }

@@ -12,12 +12,12 @@ pub fn main() -> Nil {
 
 pub fn parse_success_test() {
   let input = [
-    Route(name: "home", path: [], sub: []),
-    Route(name: "client", path: [Lit("clients"), Int("clientId")], sub: [
-      Route(name: "show", path: [], sub: []),
-      Route(name: "orders", path: [Lit("orders")], sub: [
-        Route(name: "index", path: [], sub: []),
-        Route(name: "show", path: [Int("orderId")], sub: []),
+    Route(name: "home", path: [], children: []),
+    Route(name: "client", path: [Lit("clients"), Int("clientId")], children: [
+      Route(name: "show", path: [], children: []),
+      Route(name: "orders", path: [Lit("orders")], children: [
+        Route(name: "index", path: [], children: []),
+        Route(name: "show", path: [Int("orderId")], children: []),
       ]),
     ]),
   ]
@@ -26,29 +26,32 @@ pub fn parse_success_test() {
   let assert Ok(par_order_id) = parameter.new("orderId", parameter.Int)
 
   let expected =
-    Node(info: Info(name: type_name.unsafe(""), path: []), sub: [
-      Node(info: Info(name: type_name.unsafe("Home"), path: []), sub: []),
+    Node(info: Info(name: type_name.unsafe(""), path: []), children: [
+      Node(info: Info(name: type_name.unsafe("Home"), path: []), children: []),
       Node(
         info: Info(name: type_name.unsafe("Client"), path: [
           SegLit(constant.unsafe("clients")),
           SegParam(par_client_id),
         ]),
-        sub: [
-          Node(info: Info(name: type_name.unsafe("Show"), path: []), sub: []),
+        children: [
+          Node(
+            info: Info(name: type_name.unsafe("Show"), path: []),
+            children: [],
+          ),
           Node(
             info: Info(name: type_name.unsafe("Orders"), path: [
               SegLit(constant.unsafe("orders")),
             ]),
-            sub: [
+            children: [
               Node(
                 info: Info(name: type_name.unsafe("Index"), path: []),
-                sub: [],
+                children: [],
               ),
               Node(
                 info: Info(name: type_name.unsafe("Show"), path: [
                   SegParam(par_order_id),
                 ]),
-                sub: [],
+                children: [],
               ),
             ],
           ),
@@ -63,9 +66,9 @@ pub fn parse_success_test() {
 
 pub fn parse_fail_duplicate_route_names_test() {
   let input = [
-    Route(name: "clients", path: [Lit("clients")], sub: [
-      Route(name: "ClientIndex", path: [], sub: []),
-      Route(name: "client_index", path: [], sub: []),
+    Route(name: "clients", path: [Lit("clients")], children: [
+      Route(name: "ClientIndex", path: [], children: []),
+      Route(name: "client_index", path: [], children: []),
     ]),
   ]
 
@@ -76,8 +79,8 @@ pub fn parse_fail_duplicate_route_names_test() {
 
 pub fn parse_fail_invalid_route_name_test() {
   let input = [
-    Route(name: "clients", path: [Lit("clients")], sub: [
-      Route(name: "123show", path: [], sub: []),
+    Route(name: "clients", path: [Lit("clients")], children: [
+      Route(name: "123show", path: [], children: []),
     ]),
   ]
 
@@ -88,8 +91,12 @@ pub fn parse_fail_invalid_route_name_test() {
 
 pub fn parse_fail_duplicate_segment_names_test() {
   let input = [
-    Route(name: "clients", path: [Lit("clients")], sub: [
-      Route(name: "show", path: [Str("client_id"), Int("ClientID")], sub: []),
+    Route(name: "clients", path: [Lit("clients")], children: [
+      Route(
+        name: "show",
+        path: [Str("client_id"), Int("ClientID")],
+        children: [],
+      ),
     ]),
   ]
 
@@ -100,7 +107,7 @@ pub fn parse_fail_duplicate_segment_names_test() {
 
 pub fn parse_success_duplicate_literal_segment_names_test() {
   let input = [
-    Route(name: "clients", path: [Lit("clients")], sub: [
+    Route(name: "clients", path: [Lit("clients")], children: [
       Route(
         name: "show",
         path: [
@@ -108,7 +115,7 @@ pub fn parse_success_duplicate_literal_segment_names_test() {
           Lit("client_id"),
           Str("client_id"),
         ],
-        sub: [],
+        children: [],
       ),
     ]),
   ]
@@ -120,8 +127,8 @@ pub fn parse_success_duplicate_literal_segment_names_test() {
 
 pub fn parse_fail_invalid_param_name_test() {
   let input = [
-    Route(name: "clients", path: [Lit("clients")], sub: [
-      Route(name: "show", path: [Str("1id")], sub: []),
+    Route(name: "clients", path: [Lit("clients")], children: [
+      Route(name: "show", path: [Str("1id")], children: []),
     ]),
   ]
 
@@ -132,8 +139,8 @@ pub fn parse_fail_invalid_param_name_test() {
 
 pub fn parse_fail_invalid_literal_test() {
   let input = [
-    Route(name: "clients", path: [Lit("clients")], sub: [
-      Route(name: "show", path: [Lit("?lit")], sub: []),
+    Route(name: "clients", path: [Lit("clients")], children: [
+      Route(name: "show", path: [Lit("?lit")], children: []),
     ]),
   ]
 

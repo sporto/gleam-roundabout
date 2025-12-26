@@ -21,13 +21,13 @@ import roundabout/internal/parameter
 /// ```
 ///
 pub fn generate_type_rec(ancestors: List(Info), node: Node) -> Document {
-  case list.is_empty(node.sub) {
+  case list.is_empty(node.children) {
     True -> doc.from_string("")
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
-        node.sub
+        node.children
         |> list.map(fn(node) { generate_type_rec(next_ancestors, node) })
 
       let this = generate_type(ancestors, node)
@@ -41,7 +41,7 @@ pub fn generate_type(ancestors: List(Info), node: Node) -> Document {
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let variants =
-    node.sub
+    node.children
     |> list.map(generate_type_variant(next_ancestors, _))
     |> doc.join(doc.line)
 
@@ -70,7 +70,7 @@ pub fn generate_type(ancestors: List(Info), node: Node) -> Document {
 fn generate_type_variant(ancestors: List(Info), node: Node) -> Document {
   let type_name = common.get_type_name(ancestors, node.info)
 
-  let sub = case list.is_empty(node.sub) {
+  let sub = case list.is_empty(node.children) {
     True -> option.None
     False -> option.Some("sub: " <> get_route_name(ancestors, node.info))
   }

@@ -7,6 +7,8 @@ example-check:
 example-test:
     cd examples && gleam test
 
+example-all: example-gen example-check example-test
+
 snaps:
     gleam run -m birdie
 

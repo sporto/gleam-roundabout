@@ -22,13 +22,13 @@ pub fn generate_segments_to_route_rec(
   ancestors: List(Info),
   node: Node,
 ) -> Document {
-  case list.is_empty(node.sub) {
+  case list.is_empty(node.children) {
     True -> doc.from_string("")
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
-        list.map(node.sub, fn(sub) {
+        list.map(node.children, fn(sub) {
           generate_segments_to_route_rec(next_ancestors, sub)
         })
 
@@ -43,7 +43,7 @@ pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> Document
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let segments_to_route_cases =
-    node.sub
+    node.children
     |> list.map(generate_segments_to_route_case(next_ancestors, _))
     |> doc.join(doc.line)
     |> doc.append(doc.line)
@@ -106,7 +106,7 @@ fn generate_segments_to_route_case(
       }
     })
     |> fn(self) {
-      case list.is_empty(node.sub) {
+      case list.is_empty(node.children) {
         True -> self
         False -> list.append(self, [doc.from_string("..rest")])
       }
@@ -125,7 +125,7 @@ fn generate_segments_to_route_case(
       }
     })
     |> fn(params) {
-      case list.is_empty(node.sub) {
+      case list.is_empty(node.children) {
         True -> params
         False -> list.append(params, ["sub"])
       }
@@ -139,7 +139,7 @@ fn generate_segments_to_route_case(
     }
   }
 
-  let right = case list.is_empty(node.sub) {
+  let right = case list.is_empty(node.children) {
     True -> {
       doc.from_string(
         common.get_type_name(ancestors, node.info) <> match_right_inner,

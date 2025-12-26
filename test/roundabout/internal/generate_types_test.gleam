@@ -21,10 +21,10 @@ pub fn generate_type_child_test() {
   let assert Ok(par_id) = parameter.new("id", parameter.Int)
 
   let node =
-    Node(info: Info(name: type_name.unsafe("User"), path: []), sub: [
+    Node(info: Info(name: type_name.unsafe("User"), path: []), children: [
       Node(
         info: Info(name: type_name.unsafe("Show"), path: [SegParam(par_id)]),
-        sub: [],
+        children: [],
       ),
     ])
 

@@ -12,5 +12,5 @@ pub type Info {
 }
 
 pub type Node {
-  Node(info: Info, sub: List(Node))
+  Node(info: Info, children: List(Node))
 }

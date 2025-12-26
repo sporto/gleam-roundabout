@@ -7,13 +7,13 @@ import roundabout/internal/node.{type Info, type Node, SegLit, SegParam}
 import roundabout/internal/parameter
 
 pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) -> Document {
-  case list.is_empty(node.sub) {
+  case list.is_empty(node.children) {
     True -> doc.from_string("")
     False -> {
       let next_ancestors = list.prepend(ancestors, node.info)
 
       let sub_types =
-        list.map(node.sub, fn(node) {
+        list.map(node.children, fn(node) {
           generate_route_to_path_rec(next_ancestors, node)
         })
 
@@ -29,7 +29,7 @@ pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> Document {
   let next_ancestors = list.prepend(ancestors, node.info)
 
   let route_to_path_cases =
-    node.sub
+    node.children
     |> list.map(generate_route_to_path_case(is_root, next_ancestors, _))
     |> doc.join(doc.line)
 
@@ -92,7 +92,7 @@ fn generate_route_to_path_case(
       }
     })
     |> fn(items) {
-      case list.is_empty(node.sub) {
+      case list.is_empty(node.children) {
         True -> items
         False -> list.append(items, ["sub"])
       }
@@ -172,7 +172,7 @@ pub fn get_branch_result(
   // If there are children
   // Add `<> some_route_to_path(sub)`
   |> fn(self) {
-    case list.is_empty(node.sub) {
+    case list.is_empty(node.children) {
       True -> self
       False ->
         self
