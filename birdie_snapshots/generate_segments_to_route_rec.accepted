@@ -7,33 +7,20 @@ test_name: generate_segments_to_route_rec_test
 pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
   case segments {
     [] -> Home |> Ok
-    ["clients"] -> Clients |> Ok
-    ["clients", client_id, ..rest] -> with_int(client_id, fn(client_id) { 
-        client_segments_to_route(rest) |> result.map(fn(sub) {
-          Client(client_id, sub)
+    ["orders"] -> Orders |> Ok
+    ["users", user_id, ..rest] -> with_int(user_id, fn(user_id) { 
+        user_segments_to_route(rest) |> result.map(fn(sub) {
+          User(user_id, sub)
         })
        })
     _ -> Error(Nil)
   }
 }
 
-fn client_segments_to_route(segments: List(String)) -> Result(ClientRoute, Nil) {
+fn user_segments_to_route(segments: List(String)) -> Result(UserRoute, Nil) {
   case segments {
-    [] -> ClientShow |> Ok
-    ["orders", ..rest] ->
-      client_orders_segments_to_route(rest) |> result.map(fn(sub) {
-        ClientOrders(sub)
-      })
-    _ -> Error(Nil)
-  }
-}
-
-fn client_orders_segments_to_route(segments: List(String)) -> Result(ClientOrdersRoute, Nil) {
-  case segments {
-    [] -> ClientOrdersIndex |> Ok
-    [order_id] -> with_int(order_id, fn(order_id) { 
-        ClientOrdersShow(order_id) |> Ok
-       })
+    [] -> UserShow |> Ok
+    ["delete"] -> UserDelete |> Ok
     _ -> Error(Nil)
   }
 }

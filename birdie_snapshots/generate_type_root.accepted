@@ -6,8 +6,8 @@ test_name: generate_type_root_test
 ---
 pub type Route {
   Home
-  Clients
-  Client(client_id: Int, sub: ClientRoute)
+  Orders
+  User(user_id: Int, sub: UserRoute)
 }
 
 

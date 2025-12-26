@@ -6,18 +6,13 @@ test_name: generate_type_rec_test
 ---
 pub type Route {
   Home
-  Clients
-  Client(client_id: Int, sub: ClientRoute)
+  Orders
+  User(user_id: Int, sub: UserRoute)
 }
 
-pub type ClientRoute {
-  ClientShow
-  ClientOrders(sub: ClientOrdersRoute)
-}
-
-pub type ClientOrdersRoute {
-  ClientOrdersIndex
-  ClientOrdersShow(order_id: Int)
+pub type UserRoute {
+  UserShow
+  UserDelete
 }
 
 

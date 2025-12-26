@@ -11,27 +11,19 @@ fn root() {
   Node(Info(type_name.unsafe(""), []), [
     Node(Info(type_name.unsafe("Home"), []), []),
     Node(
-      Info(type_name.unsafe("Clients"), [SegLit(constant.unsafe("clients"))]),
+      Info(type_name.unsafe("Orders"), [SegLit(constant.unsafe("orders"))]),
       [],
     ),
     Node(
-      Info(type_name.unsafe("Client"), [
-        SegLit(constant.unsafe("clients")),
-        SegParam(parameter.unsafe_int("client_id")),
+      Info(type_name.unsafe("User"), [
+        SegLit(constant.unsafe("users")),
+        SegParam(parameter.unsafe_int("user_id")),
       ]),
       [
         Node(Info(type_name.unsafe("Show"), []), []),
         Node(
-          Info(type_name.unsafe("Orders"), [SegLit(constant.unsafe("orders"))]),
-          [
-            Node(Info(type_name.unsafe("Index"), []), []),
-            Node(
-              Info(type_name.unsafe("Show"), [
-                SegParam(parameter.unsafe_int("order_id")),
-              ]),
-              [],
-            ),
-          ],
+          Info(type_name.unsafe("Delete"), [SegLit(constant.unsafe("delete"))]),
+          [],
         ),
       ],
     ),
