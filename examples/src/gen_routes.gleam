@@ -21,5 +21,5 @@ const routes = [
 ]
 
 pub fn main() {
-  roundabout.main(routes, "src/generated/routes.gleam")
+  roundabout.main(routes, "src/generated/routes")
 }

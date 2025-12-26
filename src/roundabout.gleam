@@ -25,6 +25,11 @@ pub type Route {
   Route(name: String, path: List(Segment), sub: List(Route))
 }
 
+/// Generate the routes file
+///
+/// ```
+/// roundabout.main(route_definitions, "src/generated/routes")
+/// ```
 pub fn main(definitions: List(Route), output_path: String) {
   use root <- result.try(parse(definitions))
 
@@ -55,7 +60,7 @@ pub fn main(definitions: List(Route), output_path: String) {
 
   let output_dir = filepath.directory_name(output_path)
   let _ = simplifile.create_directory_all(output_dir)
-  let _ = simplifile.write(output_path, generated_code)
+  let _ = simplifile.write(output_path <> ".gleam", generated_code)
 
   Ok(Nil)
 }

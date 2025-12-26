@@ -71,7 +71,7 @@ const routes = [
 ]
 
 pub fn main() -> Nil {
-  roundabout.main(routes, "src/generated/routes.gleam")
+  roundabout.main(routes, "src/generated/routes")
 }
 ```
 
