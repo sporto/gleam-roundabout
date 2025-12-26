@@ -1,13 +1,10 @@
 import glam/doc.{type Document}
 import gleam/list
-import gleam/option
-import gleam/result
 import gleam/string
 import roundabout/common.{case_arrow, double_quote, pipe_join}
 import roundabout/constant
-import roundabout/node.{type Info, type Node, type Segment, SegLit, SegParam}
+import roundabout/node.{type Info, type Node, SegLit, SegParam}
 import roundabout/parameter
-import roundabout/type_name
 
 /// Generates the segments to route functions
 ///

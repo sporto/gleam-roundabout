@@ -105,17 +105,18 @@ fn generate_route_to_path_case(
     False -> "(" <> string.join(variant_params, ", ") <> ")"
   }
 
-  let path = generate_route_to_path_case_right(is_root, ancestors, node)
+  let branch_result = get_branch_result(is_root, ancestors, node)
 
   doc.from_string(
     common.get_type_name(ancestors, node.info) <> variant_params_str,
   )
   |> doc.append(common.case_arrow())
-  |> doc.append(path)
+  |> doc.append(branch_result)
   |> doc.nest(2)
 }
 
-fn generate_route_to_path_case_right(
+@internal
+pub fn get_branch_result(
   is_root: Bool,
   ancestors: List(Info),
   node: Node,
