@@ -16,12 +16,20 @@ import roundabout/internal/parameter
 import roundabout/internal/type_name
 import simplifile
 
+/// Path segments
+/// `Lit` for literal, path segments that are constant e.g. `users` in /users/1
+/// `Str` a segment that should be parsed into a string
+/// `Int` a segment that should be parsed into an integer
 pub type Segment {
   Lit(val: String)
   Str(name: String)
   Int(name: String)
 }
 
+/// The route definition
+/// `name` is the name for this route, this will be used for generating the variant name
+/// e.g. `user` -> `User`
+/// `path` defines the url segments e.g. /users/1
 pub type Route {
   Route(name: String, path: List(Segment), children: List(Route))
 }
