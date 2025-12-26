@@ -1,5 +1,5 @@
 example-gen:
-    cd examples && gleam run -m gen_routes
+    cd examples && gleam run -m generate_routes
 
 example-check:
     cd examples && gleam check

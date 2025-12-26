@@ -21,5 +21,5 @@ const routes = [
 ]
 
 pub fn main() {
-  roundabout.main(routes, "src/generated/routes")
+  roundabout.main(routes, "src/example_app/generated/routes")
 }

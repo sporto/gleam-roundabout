@@ -49,7 +49,7 @@ gleam add roundabout@1
 
 ## Generating routes
 
-Create a module in your project which defines the route definitions and calls the generator. e.g. in `src/gen_routes.gleam`
+Create a module in your project which defines the route definitions and calls the generator. e.g. in `dev/generate_routes.gleam`
 
 ```gleam
 import roundabout.{Int, Lit, Route, Str}
@@ -71,16 +71,16 @@ const routes = [
 ]
 
 pub fn main() -> Nil {
-  roundabout.main(routes, "src/generated/routes")
+  roundabout.main(routes, "src/my_app/generated/routes")
 }
 ```
 
 Call this using:
 ```sh
-gleam run -m gen_routes
+gleam run -m generate_routes
 ```
 
-See example output at `examples/src/generated/routes.gleam`
+See example output at `examples/src/example_app/generated/routes.gleam`
 
 ## Using this in your application
 

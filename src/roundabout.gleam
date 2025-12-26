@@ -29,7 +29,7 @@ pub type Route {
 /// Generate the routes file
 ///
 /// ```
-/// roundabout.main(route_definitions, "src/generated/routes")
+/// roundabout.main(route_definitions, "src/my_app/generated/routes")
 /// ```
 pub fn main(definitions: List(Route), output_path: String) {
   use root <- result.try(parse(definitions))

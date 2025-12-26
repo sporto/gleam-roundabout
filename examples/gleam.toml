@@ -1,4 +1,4 @@
-name = "examples"
+name = "example_app"
 version = "1.0.0"
 description = "Route generation example"
 
