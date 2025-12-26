@@ -5,8 +5,11 @@ import gleam/result
 import gleam/set
 import justin
 import roundabout/constant
-import roundabout/generate
+import roundabout/generate_helpers
+import roundabout/generate_other
 import roundabout/generate_route_to_path
+import roundabout/generate_segments_to_route
+import roundabout/generate_types
 import roundabout/node
 import roundabout/parameter
 import roundabout/type_name
@@ -25,21 +28,22 @@ pub type Route {
 pub fn main(definitions: List(Route), output_path: String) {
   use root <- result.try(parse(definitions))
 
-  let types = generate.generate_type_rec([], root)
+  let types = generate_types.generate_type_rec([], root)
 
-  let segments_to_route = generate.generate_segments_to_route_rec([], root)
+  let segments_to_route =
+    generate_segments_to_route.generate_segments_to_route_rec([], root)
 
   let routes_to_path =
     generate_route_to_path.generate_route_to_path_rec([], root)
 
-  let helpers = generate.generate_helpers_rec([], root)
+  let helpers = generate_helpers.generate_helpers_rec([], root)
 
-  let utils = generate.generate_utils()
+  let utils = generate_other.generate_utils()
 
   let all =
     doc.concat([
-      generate.generate_header(),
-      generate.generate_imports(),
+      generate_other.generate_header(),
+      generate_other.generate_imports(),
       types,
       segments_to_route,
       routes_to_path,

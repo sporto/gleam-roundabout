@@ -1,8 +1,11 @@
 import birdie
 import glam/doc
 import roundabout/constant
-import roundabout/generate
+import roundabout/generate_helpers
+import roundabout/generate_other
 import roundabout/generate_route_to_path
+import roundabout/generate_segments_to_route
+import roundabout/generate_types
 import roundabout/node.{Info, Node, SegLit, SegParam}
 import roundabout/parameter
 import roundabout/type_name
@@ -32,7 +35,7 @@ fn root() {
 }
 
 pub fn generate_imports_test() {
-  let actual = generate.generate_imports()
+  let actual = generate_other.generate_imports()
 
   actual
   |> doc.to_string(80)
@@ -43,7 +46,7 @@ pub fn generate_imports_test() {
 ///
 pub fn generate_type_root_test() {
   let assert Ok(root) = root()
-  let actual = generate.generate_type([], root)
+  let actual = generate_types.generate_type([], root)
 
   actual
   |> doc.to_string(80)
@@ -63,7 +66,7 @@ pub fn generate_type_child_test() {
       ),
     ])
 
-  let actual = generate.generate_type(ancestors, node)
+  let actual = generate_types.generate_type(ancestors, node)
 
   actual
   |> doc.to_string(80)
@@ -72,7 +75,7 @@ pub fn generate_type_child_test() {
 
 pub fn generate_type_rec_test() {
   let assert Ok(root) = root()
-  let actual = generate.generate_type_rec([], root)
+  let actual = generate_types.generate_type_rec([], root)
 
   actual
   |> doc.to_string(80)
@@ -83,7 +86,7 @@ pub fn generate_type_rec_test() {
 ///
 pub fn generate_segments_to_route_root_test() {
   let assert Ok(root) = root()
-  let actual = generate.generate_segments_to_route([], root)
+  let actual = generate_segments_to_route.generate_segments_to_route([], root)
 
   actual
   |> doc.to_string(80)
@@ -94,7 +97,7 @@ pub fn generate_segments_to_route_rec_test() {
   let assert Ok(root) = root()
 
   let actual =
-    generate.generate_segments_to_route_rec([], root)
+    generate_segments_to_route.generate_segments_to_route_rec([], root)
     |> doc.to_string(80)
 
   actual
@@ -129,7 +132,7 @@ pub fn generate_helpers_rec_test() {
   let assert Ok(root) = root()
 
   let actual =
-    generate.generate_helpers_rec([], root)
+    generate_helpers.generate_helpers_rec([], root)
     |> doc.to_string(80)
 
   actual
