@@ -52,25 +52,25 @@ gleam add roundabout@1
 Create a module in your project which defines the route definitions and calls the generator. e.g. in `dev/generate_routes.gleam`
 
 ```gleam
-import roundabout.{Int, Lit, Route, Str}
-
-const routes = [
-  Route(name: "home", path: [], children: []),
-  // Will match an individual order e.g. /orders/123
-  Route(name: "order", path: [Lit("orders"), Int("id")], children: []),
-  Route(
-    name: "user",
-    path: [Lit("users"), Int("id")],
-    children: [
-      // Will match /users/123
-      Route(name: "show", path: [], children: []),
-      // Will match /users/123/delete
-      Route(name: "delete", path: [Lit("delete")], children: []),
-    ],
-  ),
-]
+import roundabout.{fixed, int, route, str}
 
 pub fn main() -> Nil {
+  let routes = [
+    route("home", path: [], children: []),
+    // Will match an individual order e.g. /orders/123
+    route("order", path: [fixed("orders"), int("id")], children: []),
+    route(
+      "user",
+      path: [fixed("users"), int("id")],
+      children: [
+        // Will match /users/123
+        route("show", path: [], children: []),
+        // Will match /users/123/delete
+        route("delete", path: [fixed("delete")], children: []),
+      ],
+    ),
+  ]
+
   roundabout.main(routes, "src/my_app/generated/routes")
 }
 ```

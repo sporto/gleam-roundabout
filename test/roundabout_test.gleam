@@ -1,6 +1,6 @@
 import gleam/result
 import gleeunit
-import roundabout.{Fixed, Int, Route, Str}
+import roundabout.{fixed, int, route, str}
 import roundabout/internal/constant
 import roundabout/internal/node.{Info, Node, SegFixed, SegParam}
 import roundabout/internal/parameter
@@ -12,12 +12,12 @@ pub fn main() -> Nil {
 
 pub fn parse_success_test() {
   let input = [
-    Route(name: "home", path: [], children: []),
-    Route(name: "client", path: [Fixed("clients"), Int("clientId")], children: [
-      Route(name: "show", path: [], children: []),
-      Route(name: "orders", path: [Fixed("orders")], children: [
-        Route(name: "index", path: [], children: []),
-        Route(name: "show", path: [Int("orderId")], children: []),
+    route("home", [], []),
+    route("client", [fixed("clients"), int("clientId")], [
+      route("show", [], []),
+      route("orders", [fixed("orders")], [
+        route("index", [], []),
+        route("show", [int("orderId")], []),
       ]),
     ]),
   ]
@@ -26,32 +26,26 @@ pub fn parse_success_test() {
   let assert Ok(par_order_id) = parameter.new("orderId", parameter.Int)
 
   let expected =
-    Node(info: Info(name: type_name.unsafe(""), path: []), children: [
-      Node(info: Info(name: type_name.unsafe("Home"), path: []), children: []),
+    Node(Info(type_name.unsafe(""), []), [
+      Node(Info(type_name.unsafe("Home"), []), []),
       Node(
-        info: Info(name: type_name.unsafe("Client"), path: [
+        Info(type_name.unsafe("Client"), [
           SegFixed(constant.unsafe("clients")),
           SegParam(par_client_id),
         ]),
-        children: [
+        [
+          Node(Info(type_name.unsafe("Show"), []), []),
           Node(
-            info: Info(name: type_name.unsafe("Show"), path: []),
-            children: [],
-          ),
-          Node(
-            info: Info(name: type_name.unsafe("Orders"), path: [
+            Info(type_name.unsafe("Orders"), [
               SegFixed(constant.unsafe("orders")),
             ]),
-            children: [
+            [
+              Node(Info(type_name.unsafe("Index"), []), []),
               Node(
-                info: Info(name: type_name.unsafe("Index"), path: []),
-                children: [],
-              ),
-              Node(
-                info: Info(name: type_name.unsafe("Show"), path: [
+                Info(type_name.unsafe("Show"), [
                   SegParam(par_order_id),
                 ]),
-                children: [],
+                [],
               ),
             ],
           ),
@@ -66,9 +60,9 @@ pub fn parse_success_test() {
 
 pub fn parse_fail_duplicate_route_names_test() {
   let input = [
-    Route(name: "clients", path: [Fixed("clients")], children: [
-      Route(name: "ClientIndex", path: [], children: []),
-      Route(name: "client_index", path: [], children: []),
+    route("clients", [fixed("clients")], [
+      route("ClientIndex", [], []),
+      route("client_index", [], []),
     ]),
   ]
 
@@ -79,8 +73,8 @@ pub fn parse_fail_duplicate_route_names_test() {
 
 pub fn parse_fail_invalid_route_name_test() {
   let input = [
-    Route(name: "clients", path: [Fixed("clients")], children: [
-      Route(name: "123show", path: [], children: []),
+    route("clients", [fixed("clients")], [
+      route("123show", [], []),
     ]),
   ]
 
@@ -91,12 +85,8 @@ pub fn parse_fail_invalid_route_name_test() {
 
 pub fn parse_fail_duplicate_segment_names_test() {
   let input = [
-    Route(name: "clients", path: [Fixed("clients")], children: [
-      Route(
-        name: "show",
-        path: [Str("client_id"), Int("ClientID")],
-        children: [],
-      ),
+    route("clients", [fixed("clients")], [
+      route("show", [str("client_id"), int("ClientID")], []),
     ]),
   ]
 
@@ -107,15 +97,15 @@ pub fn parse_fail_duplicate_segment_names_test() {
 
 pub fn parse_success_duplicate_literal_segment_names_test() {
   let input = [
-    Route(name: "clients", path: [Fixed("clients")], children: [
-      Route(
-        name: "show",
-        path: [
-          Fixed("client_id"),
-          Fixed("client_id"),
-          Str("client_id"),
+    route("clients", [fixed("clients")], [
+      route(
+        "show",
+        [
+          fixed("client_id"),
+          fixed("client_id"),
+          str("client_id"),
         ],
-        children: [],
+        [],
       ),
     ]),
   ]
@@ -127,8 +117,8 @@ pub fn parse_success_duplicate_literal_segment_names_test() {
 
 pub fn parse_fail_invalid_param_name_test() {
   let input = [
-    Route(name: "clients", path: [Fixed("clients")], children: [
-      Route(name: "show", path: [Str("1id")], children: []),
+    route("clients", [fixed("clients")], [
+      route("show", [str("1id")], []),
     ]),
   ]
 
@@ -139,8 +129,8 @@ pub fn parse_fail_invalid_param_name_test() {
 
 pub fn parse_fail_invalid_literal_test() {
   let input = [
-    Route(name: "clients", path: [Fixed("clients")], children: [
-      Route(name: "show", path: [Fixed("?lit")], children: []),
+    route("clients", [fixed("clients")], [
+      route("show", [fixed("?lit")], []),
     ]),
   ]
 

@@ -17,10 +17,7 @@ import roundabout/internal/type_name
 import simplifile
 
 /// Path segments
-/// `Fixed` for path segments that are fixed e.g. `users` in /users/1
-/// `Str` a segment that should be parsed into a string
-/// `Int` a segment that should be parsed into an integer
-pub type Segment {
+pub opaque type Segment {
   Fixed(val: String)
   Str(name: String)
   Int(name: String)
@@ -30,8 +27,45 @@ pub type Segment {
 /// `name` is the name for this route, this will be used for generating the variant name
 /// e.g. `user` -> `User`
 /// `path` defines the url segments e.g. /users/1
-pub type Route {
+pub opaque type Route {
   Route(name: String, path: List(Segment), children: List(Route))
+}
+
+/// Make a route defintion
+///
+/// e.g.
+/// ```gleam
+/// route("users", [fixed("users"), int("user_id")], [])
+/// ```
+///
+pub fn route(
+  name name: String,
+  path path: List(Segment),
+  children children: List(Route),
+) {
+  Route(name:, path:, children:)
+}
+
+/// A path segment that is constant
+///
+pub fn fixed(value: String) {
+  Fixed(value)
+}
+
+/// A path segment that should resolve to a string
+///
+/// e.g.
+/// [str("user_id")]
+pub fn str(name: String) {
+  Str(name)
+}
+
+/// A path segment that should resolve to an integer
+///
+/// e.g.
+/// [int("user_id")]
+pub fn int(name: String) {
+  Int(name)
 }
 
 /// Generate the routes file
