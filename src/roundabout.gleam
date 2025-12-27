@@ -17,14 +17,14 @@ import roundabout/internal/type_name
 import simplifile
 
 /// Path segments
-pub type Segment {
+pub opaque type Segment {
   Fixed(value: String)
   Str(name: String)
   Int(name: String)
 }
 
 /// The route definition
-pub type Route {
+pub opaque type Route {
   Route(name: String, path: List(Segment), children: List(Route))
 }
 
