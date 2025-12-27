@@ -17,17 +17,14 @@ import roundabout/internal/type_name
 import simplifile
 
 /// Path segments
-pub opaque type Segment {
-  Fixed(val: String)
+pub type Segment {
+  Fixed(value: String)
   Str(name: String)
   Int(name: String)
 }
 
 /// The route definition
-/// `name` is the name for this route, this will be used for generating the variant name
-/// e.g. `user` -> `User`
-/// `path` defines the url segments e.g. /users/1
-pub opaque type Route {
+pub type Route {
   Route(name: String, path: List(Segment), children: List(Route))
 }
 
@@ -38,6 +35,11 @@ pub opaque type Route {
 /// route("users", [fixed("users"), int("user_id")], [])
 /// ```
 ///
+/// `name` is the name for this route, this will be used for generating the variant names and helper names.
+///
+/// `path` defines the url segments e.g. /users/1.
+///
+/// `children` generates sub types for nested routes, this is useful for middleware.
 pub fn route(
   name name: String,
   path path: List(Segment),
@@ -48,6 +50,10 @@ pub fn route(
 
 /// A path segment that is constant
 ///
+/// e.g.
+/// ```gleam
+/// [fixed("users"), str("user_id")]
+/// ```
 pub fn fixed(value: String) {
   Fixed(value)
 }
@@ -55,7 +61,9 @@ pub fn fixed(value: String) {
 /// A path segment that should resolve to a string
 ///
 /// e.g.
-/// [str("user_id")]
+/// ```gleam
+/// [fixed("users"), str("user_id")]
+/// ```
 pub fn str(name: String) {
   Str(name)
 }
@@ -63,14 +71,16 @@ pub fn str(name: String) {
 /// A path segment that should resolve to an integer
 ///
 /// e.g.
-/// [int("user_id")]
+/// ```gleam
+/// [fixed("users"), int("user_id")]
+/// ```
 pub fn int(name: String) {
   Int(name)
 }
 
 /// Generate the routes file
 ///
-/// ```
+/// ```gleam
 /// roundabout.main(route_definitions, "src/my_app/generated/routes")
 /// ```
 pub fn main(definitions: List(Route), output_path: String) {
