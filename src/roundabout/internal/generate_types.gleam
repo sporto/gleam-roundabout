@@ -4,7 +4,7 @@ import gleam/option
 import gleam/string
 import roundabout/internal/common
 import roundabout/internal/node.{
-  type Info, type Node, type Segment, SegLit, SegParam,
+  type Info, type Node, type Segment, SegFixed, SegParam,
 }
 import roundabout/internal/parameter
 
@@ -96,7 +96,7 @@ fn generate_type_variant(ancestors: List(Info), node: Node) -> Document {
 fn generate_type_variant_param(segment: Segment) {
   case segment {
     SegParam(param) -> Ok(parameter.full(param))
-    SegLit(_) -> Error(Nil)
+    SegFixed(_) -> Error(Nil)
   }
 }
 

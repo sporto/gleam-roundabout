@@ -3,7 +3,7 @@ import roundabout/internal/parameter
 import roundabout/internal/type_name
 
 pub type Segment {
-  SegLit(value: constant.Constant)
+  SegFixed(value: constant.Constant)
   SegParam(name: parameter.Parameter)
 }
 

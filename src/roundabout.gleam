@@ -17,11 +17,11 @@ import roundabout/internal/type_name
 import simplifile
 
 /// Path segments
-/// `Lit` for literal, path segments that are constant e.g. `users` in /users/1
+/// `Fixed` for path segments that are fixed e.g. `users` in /users/1
 /// `Str` a segment that should be parsed into a string
 /// `Int` a segment that should be parsed into an integer
 pub type Segment {
-  Lit(val: String)
+  Fixed(val: String)
   Str(name: String)
   Int(name: String)
 }
@@ -137,9 +137,9 @@ fn parse_definition_info(input: Route) {
     input_path
     |> list.try_map(fn(seg) {
       case seg {
-        Lit(val) -> {
+        Fixed(val) -> {
           constant.new(val)
-          |> result.map(node.SegLit)
+          |> result.map(node.SegFixed)
         }
         Str(val) -> {
           parameter.new(val, parameter.Str)
@@ -163,7 +163,7 @@ fn assert_no_duplicate_segment_names(node_name: String, segments: List(Segment))
   let segment_names =
     list.filter_map(segments, fn(seg) {
       case seg {
-        Lit(_) -> Error(Nil)
+        Fixed(_) -> Error(Nil)
         Str(val) -> Ok(justin.snake_case(val))
         Int(val) -> Ok(justin.snake_case(val))
       }

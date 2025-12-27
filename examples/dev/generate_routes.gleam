@@ -1,21 +1,21 @@
 import roundabout.{Int, Lit, Route, Str}
 
 const routes = [
-  Route(name: "home", path: [], children: []),
-  Route(name: "profile", path: [Lit("profile"), Str("id")], children: []),
-  Route(name: "my_orders", path: [Lit("my-orders")], children: []),
-  Route(name: "order", path: [Lit("orders"), Int("id")], children: []),
+  Route("home", path: [], children: []),
+  Route("profile", path: [Lit("profile"), Str("id")], children: []),
+  Route("my_orders", path: [Lit("my-orders")], children: []),
+  Route("order", path: [Lit("orders"), Int("id")], children: []),
   Route(
-    name: "comment",
+    "comment",
     path: [Lit("posts"), Int("postId"), Lit("comments"), Int("commentId")],
     children: [],
   ),
   Route(
-    name: "user",
+    "user",
     path: [Lit("users"), Int("id")],
     children: [
-      Route(name: "show", path: [], children: []),
-      Route(name: "activate", path: [Lit("new")], children: []),
+      Route("show", path: [], children: []),
+      Route("activate", path: [Lit("new")], children: []),
     ],
   ),
 ]

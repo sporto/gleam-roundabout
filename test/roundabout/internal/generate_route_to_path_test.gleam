@@ -32,7 +32,7 @@ pub fn get_branch_result_root_with_path_test() {
       [],
       Node(
         Info(type_name.unsafe("Users"), path: [
-          node.SegLit(constant.unsafe("users")),
+          node.SegFixed(constant.unsafe("users")),
         ]),
         children: [],
       ),

@@ -3,7 +3,7 @@ import gleam/list
 import gleam/string
 import roundabout/internal/common.{case_arrow, double_quote, pipe_join}
 import roundabout/internal/constant
-import roundabout/internal/node.{type Info, type Node, SegLit, SegParam}
+import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 
 /// Generates the segments to route functions
@@ -100,7 +100,7 @@ fn generate_segments_to_route_case(
     node.info.path
     |> list.map(fn(segment) {
       case segment {
-        SegLit(value) ->
+        SegFixed(value) ->
           doc.from_string(double_quote <> constant.value(value) <> double_quote)
         SegParam(param) -> doc.from_string(parameter.name(param))
       }
@@ -120,7 +120,7 @@ fn generate_segments_to_route_case(
     node.info.path
     |> list.filter_map(fn(seg) {
       case seg {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(param) -> Ok(parameter.name(param))
       }
     })
@@ -173,7 +173,7 @@ fn generate_segments_to_route_case(
   let right =
     list.fold(node.info.path, right, fn(acc, segment) {
       case segment {
-        SegLit(_) -> acc
+        SegFixed(_) -> acc
         SegParam(param) -> {
           case parameter.kind(param) {
             parameter.Str -> acc

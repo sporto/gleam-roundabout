@@ -3,7 +3,7 @@ import gleam/list
 import gleam/string
 import roundabout/internal/common
 import roundabout/internal/constant
-import roundabout/internal/node.{type Info, type Node, SegLit, SegParam}
+import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 
 pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) -> Document {
@@ -83,7 +83,7 @@ fn generate_route_to_path_case(
     node.info.path
     |> list.filter_map(fn(seg) {
       case seg {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(param) -> {
           param
           |> parameter.name
@@ -123,7 +123,7 @@ pub fn get_branch_result(
   let segments =
     list.map(node.info.path, fn(seg) {
       case seg {
-        SegLit(value) -> {
+        SegFixed(value) -> {
           doc.from_string(
             common.double_quote <> constant.value(value) <> common.double_quote,
           )

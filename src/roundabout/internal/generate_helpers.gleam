@@ -4,7 +4,7 @@ import gleam/result
 import gleam/string
 import roundabout/internal/common.{pipe_join}
 import roundabout/internal/node.{
-  type Info, type Node, type Segment, SegLit, SegParam,
+  type Info, type Node, type Segment, SegFixed, SegParam,
 }
 import roundabout/internal/parameter
 import roundabout/internal/type_name
@@ -42,7 +42,7 @@ fn generate_route_helper(ancestors: List(Info), cont: Node) -> Document {
     get_function_arguments(ancestors, [], cont.info)
     |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(param) -> parameter.full(param) |> Ok
       }
     })
@@ -74,7 +74,7 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
     function_arguments
     |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(name) -> parameter.full(name) |> Ok
       }
     })
@@ -84,7 +84,7 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
     function_arguments
     |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(name) -> Ok(parameter.name(name))
       }
     })
@@ -120,7 +120,7 @@ pub fn get_function_arguments(
     acc
     |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> {
+        SegFixed(_) -> {
           Error("")
         }
         SegParam(param) -> {
@@ -141,7 +141,7 @@ pub fn get_function_arguments(
     info.path
     |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(param) -> {
           let new_name = {
             type_name.snake(info.name) <> "_" <> parameter.name(param)
@@ -175,7 +175,7 @@ fn generate_route_helper_body(
     info.path
     |> list.filter_map(fn(segment) {
       case segment {
-        SegLit(_) -> Error(Nil)
+        SegFixed(_) -> Error(Nil)
         SegParam(param) -> {
           { type_name.snake(info.name) <> "_" <> parameter.name(param) }
           |> Ok
