@@ -68,7 +68,7 @@ pub fn parse_fail_duplicate_route_names_test() {
 
   let actual = roundabout.parse(input)
 
-  assert actual == Error("Route clients contain duplicate route names")
+  assert actual == Error("Route clients contains duplicate route names")
 }
 
 pub fn parse_fail_invalid_route_name_test() {
@@ -92,7 +92,7 @@ pub fn parse_fail_duplicate_segment_names_test() {
 
   let actual = roundabout.parse(input)
 
-  assert actual == Error("Route show contain duplicate segment names")
+  assert actual == Error("Route show contains duplicate segment names")
 }
 
 pub fn parse_success_duplicate_literal_segment_names_test() {

@@ -156,7 +156,7 @@ fn assert_no_duplicate_variant_names(
 
   case list.length(variant_names) == set.size(as_set) {
     True -> Ok(nodes)
-    False -> Error("Route " <> parent_name <> " contain duplicate route names")
+    False -> Error("Route " <> parent_name <> " contains duplicate route names")
   }
 }
 
@@ -217,6 +217,6 @@ fn assert_no_duplicate_segment_names(node_name: String, segments: List(Segment))
 
   case list.length(segment_names) == set.size(as_set) {
     True -> Ok(segments)
-    False -> Error("Route " <> node_name <> " contain duplicate segment names")
+    False -> Error("Route " <> node_name <> " contains duplicate segment names")
   }
 }
