@@ -13,7 +13,7 @@ pub fn main() {
     ),
     route("user", [fixed("users"), int("id")], children: [
       route("show", [], children: []),
-      route("activate", [fixed("new")], children: []),
+      route("activate", [fixed("activate")], children: []),
     ]),
   ]
 

@@ -44,7 +44,7 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
 fn user_segments_to_route(segments: List(String)) -> Result(UserRoute, Nil) {
   case segments {
     [] -> UserShow |> Ok
-    ["new"] -> UserActivate |> Ok
+    ["activate"] -> UserActivate |> Ok
     _ -> Error(Nil)
   }
 }
@@ -69,7 +69,7 @@ pub fn route_to_path(route: Route) -> String {
 fn user_route_to_path(route: UserRoute) -> String {
   case route {
     UserShow -> ""
-    UserActivate -> "/" <> "new"
+    UserActivate -> "/" <> "activate"
   }
 }
 
