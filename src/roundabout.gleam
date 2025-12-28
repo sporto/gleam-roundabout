@@ -5,7 +5,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 import justin
-import roundabout/internal/constant
+import roundabout/internal/fixed
 import roundabout/internal/generate_helpers
 import roundabout/internal/generate_other
 import roundabout/internal/generate_route_to_path
@@ -182,7 +182,7 @@ fn parse_definition_info(input: Route) {
     |> list.try_map(fn(seg) {
       case seg {
         Fixed(val) -> {
-          constant.new(val)
+          fixed.new(val)
           |> result.map(node.SegFixed)
         }
         Str(val) -> {

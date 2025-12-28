@@ -1,6 +1,6 @@
 import birdie
 import glam/doc
-import roundabout/internal/constant
+import roundabout/internal/fixed
 import roundabout/internal/fixtures
 import roundabout/internal/generate_route_to_path as subject
 import roundabout/internal/node.{Info, Node}
@@ -32,7 +32,7 @@ pub fn get_branch_result_root_with_path_test() {
       [],
       Node(
         Info(type_name.unsafe("Users"), path: [
-          node.SegFixed(constant.unsafe("users")),
+          node.SegFixed(fixed.unsafe("users")),
         ]),
         children: [],
       ),

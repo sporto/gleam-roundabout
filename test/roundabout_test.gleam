@@ -1,7 +1,7 @@
 import gleam/result
 import gleeunit
 import roundabout.{fixed, int, route, str}
-import roundabout/internal/constant
+import roundabout/internal/fixed
 import roundabout/internal/node.{Info, Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 import roundabout/internal/type_name
@@ -30,14 +30,14 @@ pub fn parse_success_test() {
       Node(Info(type_name.unsafe("Home"), []), []),
       Node(
         Info(type_name.unsafe("Client"), [
-          SegFixed(constant.unsafe("clients")),
+          SegFixed(fixed.unsafe("clients")),
           SegParam(par_client_id),
         ]),
         [
           Node(Info(type_name.unsafe("Show"), []), []),
           Node(
             Info(type_name.unsafe("Orders"), [
-              SegFixed(constant.unsafe("orders")),
+              SegFixed(fixed.unsafe("orders")),
             ]),
             [
               Node(Info(type_name.unsafe("Index"), []), []),
@@ -136,5 +136,5 @@ pub fn parse_fail_invalid_literal_test() {
 
   let actual = roundabout.parse(input)
 
-  assert actual == Error("Invalid constant value ?lit")
+  assert actual == Error("Invalid fixed value ?lit")
 }

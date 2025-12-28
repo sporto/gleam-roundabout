@@ -2,7 +2,7 @@ import glam/doc.{type Document}
 import gleam/list
 import gleam/string
 import roundabout/internal/common.{case_arrow, double_quote, pipe_join}
-import roundabout/internal/constant
+import roundabout/internal/fixed
 import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 
@@ -101,7 +101,7 @@ fn generate_segments_to_route_case(
     |> list.map(fn(segment) {
       case segment {
         SegFixed(value) ->
-          doc.from_string(double_quote <> constant.value(value) <> double_quote)
+          doc.from_string(double_quote <> fixed.value(value) <> double_quote)
         SegParam(param) -> doc.from_string(parameter.name(param))
       }
     })

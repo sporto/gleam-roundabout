@@ -2,7 +2,7 @@ import glam/doc.{type Document}
 import gleam/list
 import gleam/string
 import roundabout/internal/common
-import roundabout/internal/constant
+import roundabout/internal/fixed
 import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 
@@ -125,7 +125,7 @@ pub fn get_branch_result(
       case seg {
         SegFixed(value) -> {
           doc.from_string(
-            common.double_quote <> constant.value(value) <> common.double_quote,
+            common.double_quote <> fixed.value(value) <> common.double_quote,
           )
         }
         SegParam(param) -> {

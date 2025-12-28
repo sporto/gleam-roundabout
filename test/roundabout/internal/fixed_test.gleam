@@ -1,5 +1,5 @@
 import gleam/result
-import roundabout/internal/constant.{new, value}
+import roundabout/internal/fixed.{new, value}
 
 pub fn valid_test() {
   assert new("clients") |> result.map(value) == Ok("clients")
@@ -20,19 +20,19 @@ pub fn valid_test() {
 }
 
 pub fn invalid_test() {
-  assert new("") == Error("Invalid constant value ")
+  assert new("") == Error("Invalid fixed value ")
 
-  assert new("active/clients") == Error("Invalid constant value active/clients")
+  assert new("active/clients") == Error("Invalid fixed value active/clients")
 
-  assert new("active clients") == Error("Invalid constant value active clients")
+  assert new("active clients") == Error("Invalid fixed value active clients")
 
-  assert new("client!") == Error("Invalid constant value client!")
+  assert new("client!") == Error("Invalid fixed value client!")
 
-  assert new("client$") == Error("Invalid constant value client$")
+  assert new("client$") == Error("Invalid fixed value client$")
 
-  assert new("client&") == Error("Invalid constant value client&")
+  assert new("client&") == Error("Invalid fixed value client&")
 
-  assert new("client#") == Error("Invalid constant value client#")
+  assert new("client#") == Error("Invalid fixed value client#")
 
-  assert new("client?") == Error("Invalid constant value client?")
+  assert new("client?") == Error("Invalid fixed value client?")
 }
