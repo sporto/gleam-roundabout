@@ -1,5 +1,5 @@
 name = "roundabout"
-version = "0.6.0"
+version = "1.0.0"
 
 description = "A routes generator"
 licences = ["MIT"]
