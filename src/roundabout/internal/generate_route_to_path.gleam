@@ -56,7 +56,7 @@ pub fn generate_route_to_path(
       <> "fn "
       <> function_name
       <> "(route: "
-      <> common.get_type_name(ancestors, node.info)
+      <> common.generate_type_name(ancestors, node.info)
       <> "Route) -> String {",
     ),
     doc.nest_docs(
@@ -113,7 +113,7 @@ fn generate_route_to_path_case(
   let branch_result = get_branch_result(is_root, ancestors, node)
 
   doc.from_string(
-    common.get_type_name(ancestors, node.info) <> variant_params_str,
+    common.generate_type_name(ancestors, node.info) <> variant_params_str,
   )
   |> doc.append(common.case_arrow())
   |> doc.append(branch_result)

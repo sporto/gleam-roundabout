@@ -58,7 +58,7 @@ pub fn generate_segments_to_route(
     |> list.filter(fn(name) { !string.is_empty(name) })
     |> string.join("_")
 
-  let type_name = common.get_type_name(ancestors, node.info)
+  let type_name = common.generate_type_name(ancestors, node.info)
 
   let pub_prefix = case ancestors.is_empty(ancestors) {
     True -> "pub "
@@ -146,7 +146,7 @@ fn generate_segments_to_route_case(
   let right = case list.is_empty(node.children) {
     True -> {
       doc.from_string(
-        common.get_type_name(ancestors, node.info) <> match_right_inner,
+        common.generate_type_name(ancestors, node.info) <> match_right_inner,
       )
       |> doc.append(pipe_join())
       |> doc.append(doc.from_string("Ok"))
@@ -164,7 +164,8 @@ fn generate_segments_to_route_case(
           [
             doc.line,
             doc.from_string(
-              common.get_type_name(ancestors, node.info) <> match_right_inner,
+              common.generate_type_name(ancestors, node.info)
+              <> match_right_inner,
             ),
           ],
           2,

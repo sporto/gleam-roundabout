@@ -31,6 +31,8 @@ pub fn case_arrow() {
   |> doc.append(doc.flex_break(" ", ""))
 }
 
+/// Generate a function name like
+/// app_client_user
 pub fn generate_function_name(
   ancestors: Ancestors(Info),
   info: Info,
@@ -43,24 +45,15 @@ pub fn generate_function_name(
   |> string.join("_")
 }
 
-pub fn get_type_name(ancestors: Ancestors(Info), info: Info) -> String {
-  get_type_name_do([], ancestors, info)
+/// Generate a type name like
+/// AppClientUser
+pub fn generate_type_name(ancestors: Ancestors(Info), info: Info) -> String {
+  ancestors
+  |> ancestors.filter(fn(a) { !type_name.is_root(a.name) })
+  |> ancestors.push(info)
+  |> ancestors.map(fn(a) { type_name.name(a.name) })
+  |> ancestors.to_list
   |> string.join("")
-}
-
-fn get_type_name_do(
-  collected: List(String),
-  ancestors: Ancestors(Info),
-  info: Info,
-) {
-  let next = list.prepend(collected, type_name.name(info.name))
-
-  case ancestors.pop(ancestors) {
-    Ok(#(next_ancestor, rest_ancestors)) -> {
-      get_type_name_do(next, rest_ancestors, next_ancestor)
-    }
-    Error(_) -> next
-  }
 }
 
 pub fn segment_to_param(

@@ -130,7 +130,7 @@ pub fn generate_route_helper_body(
     False -> "(" <> string.join(params, ", ") <> ")"
   }
 
-  let type_name = common.get_type_name(ancestors, info)
+  let type_name = common.generate_type_name(ancestors, info)
 
   let new_line = doc.from_string(type_name <> params)
 

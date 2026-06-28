@@ -4,9 +4,9 @@ import roundabout/internal/node.{Info}
 import roundabout/internal/parameter
 import roundabout/internal/type_name
 
-pub fn get_type_name_test() {
+pub fn generate_type_name_test() {
   let actual =
-    common.get_type_name(
+    common.generate_type_name(
       ancestors.singleton(Info(name: type_name.unsafe("Client"), path: [])),
       Info(name: type_name.unsafe("SimpleUser"), path: []),
     )

@@ -69,7 +69,7 @@ pub fn generate_type(ancestors: Ancestors(Info), node: Node) -> Document {
 ///   User(user_id: Int, sub: UserRoute)
 /// ```
 fn generate_type_variant(ancestors: Ancestors(Info), node: Node) -> Document {
-  let type_name = common.get_type_name(ancestors, node.info)
+  let type_name = common.generate_type_name(ancestors, node.info)
 
   let sub = case list.is_empty(node.children) {
     True -> option.None
@@ -102,5 +102,5 @@ fn generate_type_variant_param(segment: Segment) {
 }
 
 fn get_route_name(ancestors: Ancestors(Info), info: Info) -> String {
-  common.get_type_name(ancestors, info) <> "Route"
+  common.generate_type_name(ancestors, info) <> "Route"
 }
