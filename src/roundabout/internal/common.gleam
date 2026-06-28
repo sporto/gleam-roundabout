@@ -37,23 +37,55 @@ pub fn generate_function_name(
   ancestors: Ancestors(Info),
   info: Info,
 ) -> String {
-  ancestors
-  |> ancestors.filter(fn(a) { !type_name.is_root(a.name) })
-  |> ancestors.push(info)
-  |> ancestors.map(fn(a) { type_name.snake(a.name) })
-  |> ancestors.to_list
-  |> string.join("_")
+  let ancestors = ancestors.map(ancestors, fn(a) { a.name })
+  qualify(ancestors, info.name, type_name.AsParameterName)
 }
 
 /// Generate a type name like
 /// AppClientUser
 pub fn generate_type_name(ancestors: Ancestors(Info), info: Info) -> String {
+  let ancestors = ancestors.map(ancestors, fn(a) { a.name })
+  qualify(ancestors, info.name, type_name.AsTypeName)
+}
+
+// pub fn qualify_parameter(
+//   ancestors: Ancestors(Info),
+//   info: Info,
+//   p: parameter.Parameter(Unqualified),
+// ) {
+//   let ancestors =
+//     ancestors.map(ancestors, fn(a) { a.name })
+//     |> ancestors.push(info.name)
+
+//   let new_name =
+//     qualify(
+//       ancestors,
+//       type_name.unsafe(parameter.print_name(p)),
+//       type_name.AsParameterName,
+//     )
+// }
+
+fn qualify(
+  ancestors: Ancestors(type_name.TypeName),
+  node: type_name.TypeName,
+  using: type_name.AsName,
+) {
+  let to_name = case using {
+    type_name.AsParameterName -> type_name.snake
+    type_name.AsTypeName -> type_name.name
+  }
+
+  let join = case using {
+    type_name.AsParameterName -> "_"
+    type_name.AsTypeName -> ""
+  }
+
   ancestors
-  |> ancestors.filter(fn(a) { !type_name.is_root(a.name) })
-  |> ancestors.push(info)
-  |> ancestors.map(fn(a) { type_name.name(a.name) })
+  |> ancestors.filter(fn(a) { !type_name.is_root(a) })
+  |> ancestors.push(node)
+  |> ancestors.map(to_name)
   |> ancestors.to_list
-  |> string.join("")
+  |> string.join(join)
 }
 
 pub fn segment_to_param(

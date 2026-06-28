@@ -1,6 +1,11 @@
 import gleam/regexp
 import justin
 
+pub type AsName {
+  AsTypeName
+  AsParameterName
+}
+
 pub opaque type TypeName {
   TypeName(name: String)
 }
