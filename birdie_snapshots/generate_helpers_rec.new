@@ -1,8 +1,6 @@
 ---
 version: 1.5.2
 title: generate_helpers_rec
-file: ./test/roundabout/internal/generate_helpers_test.gleam
-test_name: generate_helpers_rec_test
 ---
 pub fn home_route() -> Route {
   Home
@@ -21,7 +19,7 @@ pub fn orders_path() -> String {
 }
 
 pub fn products_product_route(products_product_product_id: Int) -> Route {
-  ProductsProduct(products_product_product_id) |> Products(_)
+  ProductsProduct(product_product_id) |> Products(_)
 }
 
 pub fn products_product_path(products_product_product_id: Int) -> String {
@@ -43,3 +41,5 @@ pub fn user_delete_route(user_user_id: Int) -> Route {
 pub fn user_delete_path(user_user_id: Int) -> String {
   user_delete_route(user_user_id) |> route_to_path
 }
+
+

@@ -1,7 +1,11 @@
 import glam/doc
 import gleam/list
+import gleam/result
 import gleam/string
-import roundabout/internal/node.{type Info}
+import roundabout/internal/node.{
+  type Info, type Node, type Segment, SegFixed, SegParam,
+}
+import roundabout/internal/parameter
 import roundabout/internal/type_name
 
 pub const double_quote = "\""
@@ -51,7 +55,11 @@ pub fn get_type_name(ancestors: List(Info), info: Info) -> String {
   |> string.join("")
 }
 
-fn get_type_name_do(collected: List(String), ancestors: List(Info), info: Info) {
+fn get_type_name_do(
+  collected: List(String),
+  ancestors: List(Info),
+  info: Info,
+) {
   let next = list.prepend(collected, type_name.name(info.name))
 
   case ancestors {
@@ -59,5 +67,41 @@ fn get_type_name_do(collected: List(String), ancestors: List(Info), info: Info) 
       get_type_name_do(next, rest_ancestors, next_ancestor)
     }
     _ -> next
+  }
+}
+
+fn segment_to_param(segment: Segment) -> Result(parameter.Parameter, Nil) {
+  case segment {
+    SegFixed(_) -> Error(Nil)
+    SegParam(param) -> {
+      Ok(param)
+    }
+  }
+}
+
+pub fn get_function_arguments(
+  ancestors: List(Info),
+  info: Info,
+) -> List(parameter.Parameter) {
+  get_function_arguments_rec(ancestors, [], info)
+}
+
+fn get_function_arguments_rec(
+  ancestors: List(Info),
+  acc: List(parameter.Parameter),
+  info: Info,
+) -> List(parameter.Parameter) {
+  let new_params =
+    info.path
+    |> list.filter_map(segment_to_param)
+
+  let next_acc =
+    list.append(new_params, acc)
+    |> list.map(parameter.prepend_name(type_name.snake(info.name), _))
+
+  case ancestors {
+    [next_ancestor, ..rest_ancestors] ->
+      get_function_arguments_rec(rest_ancestors, next_acc, next_ancestor)
+    _ -> next_acc
   }
 }

@@ -1,13 +1,17 @@
 ---
 version: 1.5.2
 title: generate_segments_to_route_root
-file: ./test/roundabout/generate_test.gleam
+file: ./test/roundabout/internal/generate_segments_to_route_test.gleam
 test_name: generate_segments_to_route_root_test
 ---
 pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
   case segments {
     [] -> Home |> Ok
     ["orders"] -> Orders |> Ok
+    ["products", ..rest] ->
+      products_segments_to_route(rest) |> result.map(fn(sub) {
+        Products(sub)
+      })
     ["users", user_id, ..rest] -> with_int(user_id, fn(user_id) { 
         user_segments_to_route(rest) |> result.map(fn(sub) {
           User(user_id, sub)

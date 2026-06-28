@@ -1,12 +1,13 @@
 ---
 version: 1.5.2
 title: generate_type_root
-file: ./test/roundabout/generate_test.gleam
+file: ./test/roundabout/internal/generate_types_test.gleam
 test_name: generate_type_root_test
 ---
 pub type Route {
   Home
   Orders
+  Products(sub: ProductsRoute)
   User(user_id: Int, sub: UserRoute)
 }
 

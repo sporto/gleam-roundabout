@@ -11,6 +11,17 @@ pub fn fixture_root() {
       [],
     ),
     Node(
+      Info(type_name.unsafe("Products"), [SegFixed(fixed.unsafe("products"))]),
+      [
+        Node(
+          Info(type_name.unsafe("Product"), [
+            SegParam(parameter.unsafe_int("product_id")),
+          ]),
+          [],
+        ),
+      ],
+    ),
+    Node(
       Info(type_name.unsafe("User"), [
         SegFixed(fixed.unsafe("users")),
         SegParam(parameter.unsafe_int("user_id")),

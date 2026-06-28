@@ -37,13 +37,20 @@ pub fn kind(p: Parameter) {
   p.kind
 }
 
-pub fn type_name(p: Parameter) {
+pub fn prepend_name(namespace: String, parameter: Parameter) {
+  case namespace {
+    "" -> parameter
+    _ -> Parameter(..parameter, name: namespace <> "_" <> parameter.name)
+  }
+}
+
+pub fn print_type_name(p: Parameter) {
   case p.kind {
     Str -> "String"
     Int -> "Int"
   }
 }
 
-pub fn full(p: Parameter) {
-  p.name <> ": " <> type_name(p)
+pub fn print_name_and_type(p: Parameter) {
+  p.name <> ": " <> print_type_name(p)
 }

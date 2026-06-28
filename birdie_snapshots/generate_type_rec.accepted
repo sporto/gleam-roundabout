@@ -1,13 +1,18 @@
 ---
 version: 1.5.2
 title: generate_type_rec
-file: ./test/roundabout/generate_test.gleam
+file: ./test/roundabout/internal/generate_types_test.gleam
 test_name: generate_type_rec_test
 ---
 pub type Route {
   Home
   Orders
+  Products(sub: ProductsRoute)
   User(user_id: Int, sub: UserRoute)
+}
+
+pub type ProductsRoute {
+  ProductsProduct(product_id: Int)
 }
 
 pub type UserRoute {

@@ -95,7 +95,7 @@ fn generate_type_variant(ancestors: List(Info), node: Node) -> Document {
 
 fn generate_type_variant_param(segment: Segment) {
   case segment {
-    SegParam(param) -> Ok(parameter.full(param))
+    SegParam(param) -> Ok(parameter.print_name_and_type(param))
     SegFixed(_) -> Error(Nil)
   }
 }

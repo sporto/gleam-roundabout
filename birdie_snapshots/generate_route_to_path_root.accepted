@@ -1,13 +1,14 @@
 ---
 version: 1.5.2
 title: generate_route_to_path_root
-file: ./test/roundabout/generate_test.gleam
+file: ./test/roundabout/internal/generate_route_to_path_test.gleam
 test_name: generate_route_to_path_root_test
 ---
 pub fn route_to_path(route: Route) -> String {
   case route {
     Home -> "/"
     Orders -> "/" <> "orders"
+    Products(sub) -> "/" <> "products" <> products_route_to_path(sub)
     User(user_id, sub) ->
       "/" <> "users" <> "/" <> int.to_string(user_id) <> user_route_to_path(sub)
   }

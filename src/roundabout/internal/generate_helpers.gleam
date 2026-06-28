@@ -1,11 +1,8 @@
 import glam/doc.{type Document}
 import gleam/list
-import gleam/result
 import gleam/string
 import roundabout/internal/common.{pipe_join}
-import roundabout/internal/node.{
-  type Info, type Node, type Segment, SegFixed, SegParam,
-}
+import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 import roundabout/internal/type_name
 
@@ -38,14 +35,11 @@ fn generate_helpers(ancestors: List(Info), node: Node) -> Document {
 fn generate_route_helper(ancestors: List(Info), cont: Node) -> Document {
   let function_name = common.get_function_name(ancestors, cont.info) <> "_route"
 
-  let function_arguments =
-    get_function_arguments(ancestors, [], cont.info)
-    |> list.filter_map(fn(segment) {
-      case segment {
-        SegFixed(_) -> Error(Nil)
-        SegParam(param) -> parameter.full(param) |> Ok
-      }
-    })
+  let function_arguments = common.get_function_arguments(ancestors, cont.info)
+
+  let this_function_arguments =
+    function_arguments
+    |> list.map(parameter.print_name_and_type)
     |> string.join(", ")
 
   let body =
@@ -54,7 +48,11 @@ fn generate_route_helper(ancestors: List(Info), cont: Node) -> Document {
 
   doc.concat([
     doc.from_string(
-      "pub fn " <> function_name <> "(" <> function_arguments <> ") -> Route {",
+      "pub fn "
+      <> function_name
+      <> "("
+      <> this_function_arguments
+      <> ") -> Route {",
     ),
     doc.nest_docs([doc.line, body], 2),
     doc.line,
@@ -68,26 +66,16 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
   let route_function_name = function_name_prefix <> "_route"
   let path_function_name = function_name_prefix <> "_path"
 
-  let function_arguments = get_function_arguments(ancestors, [], cont.info)
+  let function_arguments = common.get_function_arguments(ancestors, cont.info)
 
   let this_function_arguments =
     function_arguments
-    |> list.filter_map(fn(segment) {
-      case segment {
-        SegFixed(_) -> Error(Nil)
-        SegParam(name) -> parameter.full(name) |> Ok
-      }
-    })
+    |> list.map(parameter.print_name_and_type)
     |> string.join(", ")
 
   let callee_arguments =
     function_arguments
-    |> list.filter_map(fn(segment) {
-      case segment {
-        SegFixed(_) -> Error(Nil)
-        SegParam(name) -> Ok(parameter.name(name))
-      }
-    })
+    |> list.map(parameter.name)
     |> string.join(", ")
 
   let body =
@@ -108,62 +96,6 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
     doc.from_string("}"),
     doc.lines(2),
   ])
-}
-
-pub fn get_function_arguments(
-  ancestors: List(Info),
-  acc: List(Segment),
-  info: Info,
-) -> List(Segment) {
-  // First we want to namespace the given acc with this info
-  let current_segments =
-    acc
-    |> list.filter_map(fn(segment) {
-      case segment {
-        SegFixed(_) -> {
-          Error("")
-        }
-        SegParam(param) -> {
-          let new_name =
-            type_name.snake(info.name) <> "_" <> parameter.name(param)
-
-          use new_param <- result.try(parameter.new(
-            new_name,
-            parameter.kind(param),
-          ))
-
-          SegParam(new_param) |> Ok
-        }
-      }
-    })
-
-  let new_segments =
-    info.path
-    |> list.filter_map(fn(segment) {
-      case segment {
-        SegFixed(_) -> Error(Nil)
-        SegParam(param) -> {
-          let new_name = {
-            type_name.snake(info.name) <> "_" <> parameter.name(param)
-          }
-
-          use new_param <- result.try(
-            parameter.new(new_name, parameter.kind(param))
-            |> result.replace_error(Nil),
-          )
-
-          Ok(SegParam(new_param))
-        }
-      }
-    })
-
-  let next_acc = list.append(new_segments, current_segments)
-
-  case ancestors {
-    [next_ancestor, ..rest_ancestors] ->
-      get_function_arguments(rest_ancestors, next_acc, next_ancestor)
-    _ -> next_acc
-  }
 }
 
 fn generate_route_helper_body(
