@@ -14,7 +14,7 @@ import roundabout/internal/generate_segments_to_route
 import roundabout/internal/generate_types
 import roundabout/internal/node
 import roundabout/internal/parameter
-import roundabout/internal/type_name
+import roundabout/internal/name
 import simplifile
 
 /// Path segments
@@ -132,7 +132,7 @@ pub fn parse(definitions: List(Route)) -> Result(node.Node, String) {
   use children <- result.try(parse_definitions("root", definitions))
 
   let root =
-    node.Node(children:, info: node.Info(name: type_name.unsafe(""), path: []))
+    node.Node(children:, info: node.Info(name: name.unsafe(""), path: []))
 
   Ok(root)
 }
@@ -154,7 +154,7 @@ fn assert_no_duplicate_variant_names(
   nodes: List(node.Node),
 ) {
   let variant_names =
-    list.map(nodes, fn(item) { type_name.snake(item.info.name) })
+    list.map(nodes, fn(item) { name.parameter_name(item.info.name) })
 
   let as_set = set.from_list(variant_names)
 
@@ -200,7 +200,7 @@ fn parse_definition_info(input: Route) {
       }
     })
 
-  use name <- result.try(type_name.new(input.name))
+  use name <- result.try(name.new(input.name))
 
   use path <- result.try(path_result)
 

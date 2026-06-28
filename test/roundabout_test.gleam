@@ -4,7 +4,7 @@ import roundabout.{fixed, int, route, str}
 import roundabout/internal/fixed
 import roundabout/internal/node.{Info, Node, SegFixed, SegParam}
 import roundabout/internal/parameter
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub fn main() -> Nil {
   gleeunit.main()
@@ -26,23 +26,23 @@ pub fn parse_success_test() {
   let assert Ok(par_order_id) = parameter.new("orderId", parameter.Int)
 
   let expected =
-    Node(Info(type_name.unsafe(""), []), [
-      Node(Info(type_name.unsafe("Home"), []), []),
+    Node(Info(name.unsafe(""), []), [
+      Node(Info(name.unsafe("home"), []), []),
       Node(
-        Info(type_name.unsafe("Client"), [
+        Info(name.unsafe("client"), [
           SegFixed(fixed.unsafe("clients")),
           SegParam(par_client_id),
         ]),
         [
-          Node(Info(type_name.unsafe("Show"), []), []),
+          Node(Info(name.unsafe("show"), []), []),
           Node(
-            Info(type_name.unsafe("Orders"), [
+            Info(name.unsafe("orders"), [
               SegFixed(fixed.unsafe("orders")),
             ]),
             [
-              Node(Info(type_name.unsafe("Index"), []), []),
+              Node(Info(name.unsafe("index"), []), []),
               Node(
-                Info(type_name.unsafe("Show"), [
+                Info(name.unsafe("show"), [
                   SegParam(par_order_id),
                 ]),
                 [],
@@ -80,7 +80,7 @@ pub fn parse_fail_invalid_route_name_test() {
 
   let actual = roundabout.parse(input)
 
-  assert actual == Error("Invalid type name 123show")
+  assert actual == Error("Invalid name 123show")
 }
 
 pub fn parse_fail_duplicate_segment_names_test() {
@@ -124,7 +124,7 @@ pub fn parse_fail_invalid_param_name_test() {
 
   let actual = roundabout.parse(input)
 
-  assert actual == Error("Invalid parameter name 1id")
+  assert actual == Error("Invalid name 1id")
 }
 
 pub fn parse_fail_invalid_literal_test() {

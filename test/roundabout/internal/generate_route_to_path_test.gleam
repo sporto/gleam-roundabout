@@ -5,13 +5,13 @@ import roundabout/internal/fixed
 import roundabout/internal/fixtures
 import roundabout/internal/generate_route_to_path as subject
 import roundabout/internal/node.{Info, Node}
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub fn get_branch_result_root_empty_test() {
   assert subject.get_branch_result(
       True,
       ancestors.empty(),
-      Node(Info(type_name.unsafe("Home"), path: []), children: []),
+      Node(Info(name.unsafe("Home"), path: []), children: []),
     )
     |> doc.to_string(80)
     == "\"/\""
@@ -21,7 +21,7 @@ pub fn get_branch_result_not_root_empty_test() {
   assert subject.get_branch_result(
       False,
       ancestors.empty(),
-      Node(Info(type_name.unsafe("Dashboard"), path: []), children: []),
+      Node(Info(name.unsafe("Dashboard"), path: []), children: []),
     )
     |> doc.to_string(80)
     == "\"\""
@@ -32,7 +32,7 @@ pub fn get_branch_result_root_with_path_test() {
       True,
       ancestors.empty(),
       Node(
-        Info(type_name.unsafe("Users"), path: [
+        Info(name.unsafe("Users"), path: [
           node.SegFixed(fixed.unsafe("users")),
         ]),
         children: [],
@@ -46,8 +46,8 @@ pub fn get_branch_result_root_with_sub_test() {
   assert subject.get_branch_result(
       True,
       ancestors.empty(),
-      Node(Info(type_name.unsafe("Users"), path: []), children: [
-        Node(Info(type_name.unsafe("Show"), path: []), children: []),
+      Node(Info(name.unsafe("Users"), path: []), children: [
+        Node(Info(name.unsafe("Show"), path: []), children: []),
       ]),
     )
     |> doc.to_string(80)

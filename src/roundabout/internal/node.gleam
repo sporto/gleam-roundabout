@@ -1,7 +1,7 @@
 import roundabout/internal/fixed
 import roundabout/internal/parameter
 import roundabout/internal/qualified
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub type Segment {
   SegFixed(value: fixed.Fixed)
@@ -9,7 +9,7 @@ pub type Segment {
 }
 
 pub type Info {
-  Info(name: type_name.TypeName, path: List(Segment))
+  Info(name: name.Name, path: List(Segment))
 }
 
 pub type Node {

@@ -1,9 +1,11 @@
 import gleam/regexp
+import gleam/list
 import gleam/string
+import gleam/result
 import justin
 import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/qualified.{type Qualified, type Unqualified}
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub type Kind {
   Int
@@ -11,48 +13,42 @@ pub type Kind {
 }
 
 pub opaque type Parameter(qua) {
-  Parameter(name: String, kind: Kind)
+  Parameter(name: name.Name, kind: Kind)
 }
 
 pub fn new(name: String, kind: Kind) -> Result(Parameter(Unqualified), String) {
-  let assert Ok(re) = regexp.from_string("^[a-z][a-z0-9 _-]*$")
+  use name <- result.try(name.new(name))
 
-  let candidate = justin.snake_case(name)
-
-  case regexp.check(re, candidate) {
-    True -> Ok(Parameter(justin.snake_case(name), kind))
-    False -> Error("Invalid parameter name " <> name)
-  }
+  Ok(Parameter(name, kind))
 }
 
 pub fn unsafe(name: String, kind: Kind) {
-  Parameter(name, kind)
+  Parameter(name.unsafe(name), kind)
 }
 
 pub fn unsafe_int(name: String) {
-  Parameter(name, Int)
+  Parameter(name.unsafe(name), Int)
 }
 
 pub fn unsafe_str(name: String) {
-  Parameter(name, Str)
+  Parameter(name.unsafe(name), Str)
 }
 
 pub fn qualify_name(
-  ancestors: Ancestors(type_name.TypeName),
-  node_name: type_name.TypeName,
+  ancestors: Ancestors(name.Name),
+  node_name: name.Name,
   p: Parameter(Unqualified),
 ) -> Parameter(Qualified) {
   let qualified_name =
     ancestors
-    |> ancestors.filter(fn(a) { !type_name.is_root(a) })
+    |> ancestors.filter(fn(a) { !name.is_root(a) })
     |> ancestors.push(node_name)
-    |> ancestors.map(type_name.name)
     |> ancestors.push(p.name)
     |> ancestors.to_list
-    |> string.join("_")
-    |> justin.snake_case
+    |> list.map(name.parameter_name)
+    |> string.join("-")
 
-  Parameter(..p, name: qualified_name)
+  Parameter(..p, name: name.unsafe(qualified_name))
 }
 
 pub fn kind(p: Parameter(qua)) {
@@ -67,11 +63,11 @@ pub fn print_type_name(p: Parameter(qua)) {
 }
 
 pub fn print_name_qualified(p: Parameter(Qualified)) -> String {
-  p.name
+  name.parameter_name(p.name)
 }
 
 pub fn print_name(p: Parameter(qua)) -> String {
-  p.name
+  name.parameter_name(p.name)
 }
 
 pub fn print_name_and_type(p: Parameter(qua)) {

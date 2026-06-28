@@ -1,20 +1,20 @@
 import roundabout/internal/fixed
 import roundabout/internal/node.{Info, Node, SegFixed, SegParam}
 import roundabout/internal/parameter
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub fn fixture_root() {
-  Node(Info(type_name.unsafe(""), []), [
-    Node(Info(type_name.unsafe("Home"), []), []),
+  Node(Info(name.unsafe(""), []), [
+    Node(Info(name.unsafe("Home"), []), []),
     Node(
-      Info(type_name.unsafe("Orders"), [SegFixed(fixed.unsafe("orders"))]),
+      Info(name.unsafe("Orders"), [SegFixed(fixed.unsafe("orders"))]),
       [],
     ),
     Node(
-      Info(type_name.unsafe("Products"), [SegFixed(fixed.unsafe("products"))]),
+      Info(name.unsafe("Products"), [SegFixed(fixed.unsafe("products"))]),
       [
         Node(
-          Info(type_name.unsafe("Product"), [
+          Info(name.unsafe("Product"), [
             SegParam(parameter.unsafe_int("id")),
           ]),
           [],
@@ -22,14 +22,14 @@ pub fn fixture_root() {
       ],
     ),
     Node(
-      Info(type_name.unsafe("User"), [
+      Info(name.unsafe("User"), [
         SegFixed(fixed.unsafe("users")),
         SegParam(parameter.unsafe_int("id")),
       ]),
       [
-        Node(Info(type_name.unsafe("Show"), []), []),
+        Node(Info(name.unsafe("Show"), []), []),
         Node(
-          Info(type_name.unsafe("Delete"), [SegFixed(fixed.unsafe("delete"))]),
+          Info(name.unsafe("Delete"), [SegFixed(fixed.unsafe("delete"))]),
           [],
         ),
       ],

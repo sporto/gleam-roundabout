@@ -8,7 +8,7 @@ import roundabout/internal/node.{
 }
 import roundabout/internal/parameter
 import roundabout/internal/qualified.{type Qualified, type Unqualified}
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub const double_quote = "\""
 
@@ -38,14 +38,14 @@ pub fn generate_function_name(
   info: Info,
 ) -> String {
   let ancestors = ancestors.map(ancestors, fn(a) { a.name })
-  qualify(ancestors, info.name, type_name.AsParameterName)
+  qualify(ancestors, info.name, name.AsParameterName)
 }
 
 /// Generate a type name like
 /// AppClientUser
 pub fn generate_type_name(ancestors: Ancestors(Info), info: Info) -> String {
   let ancestors = ancestors.map(ancestors, fn(a) { a.name })
-  qualify(ancestors, info.name, type_name.AsTypeName)
+  qualify(ancestors, info.name, name.AsTypeName)
 }
 
 // pub fn qualify_parameter(
@@ -66,22 +66,22 @@ pub fn generate_type_name(ancestors: Ancestors(Info), info: Info) -> String {
 // }
 
 fn qualify(
-  ancestors: Ancestors(type_name.TypeName),
-  node: type_name.TypeName,
-  using: type_name.AsName,
+  ancestors: Ancestors(name.Name),
+  node: name.Name,
+  using: name.AsName,
 ) {
   let to_name = case using {
-    type_name.AsParameterName -> type_name.snake
-    type_name.AsTypeName -> type_name.name
+    name.AsParameterName -> name.parameter_name
+    name.AsTypeName -> name.type_name
   }
 
   let join = case using {
-    type_name.AsParameterName -> "_"
-    type_name.AsTypeName -> ""
+    name.AsParameterName -> "_"
+    name.AsTypeName -> ""
   }
 
   ancestors
-  |> ancestors.filter(fn(a) { !type_name.is_root(a) })
+  |> ancestors.filter(fn(a) { !name.is_root(a) })
   |> ancestors.push(node)
   |> ancestors.map(to_name)
   |> ancestors.to_list

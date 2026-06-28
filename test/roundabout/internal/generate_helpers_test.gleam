@@ -6,7 +6,7 @@ import roundabout/internal/fixtures
 import roundabout/internal/generate_helpers
 import roundabout/internal/node
 import roundabout/internal/parameter
-import roundabout/internal/type_name
+import roundabout/internal/name
 
 pub fn generate_route_helper_body_test() {
   // Given not ancestors
@@ -14,7 +14,7 @@ pub fn generate_route_helper_body_test() {
     generate_helpers.generate_route_helper_body(
       ancestors.empty(),
       [],
-      node.Info(type_name.unsafe("User"), path: []),
+      node.Info(name.unsafe("User"), path: []),
     )
     |> doc.join(common.pipe_join())
     |> doc.to_string(80)
@@ -27,7 +27,7 @@ pub fn generate_route_helper_body_params_test() {
     generate_helpers.generate_route_helper_body(
       ancestors.empty(),
       [],
-      node.Info(type_name.unsafe("User"), path: [
+      node.Info(name.unsafe("User"), path: [
         node.SegParam(parameter.unsafe_int("id")),
       ]),
     )
@@ -42,7 +42,7 @@ pub fn generate_route_helper_body_multiple_params_test() {
     generate_helpers.generate_route_helper_body(
       ancestors.empty(),
       [],
-      node.Info(type_name.unsafe("User"), path: [
+      node.Info(name.unsafe("User"), path: [
         node.SegParam(parameter.unsafe_int("id")),
         node.SegParam(parameter.unsafe_str("state")),
       ]),
@@ -56,9 +56,9 @@ pub fn generate_route_helper_body_multiple_params_test() {
 pub fn generate_route_helper_ancestors_test() {
   let actual =
     generate_helpers.generate_route_helper_body(
-      ancestors.singleton(node.Info(type_name.unsafe("App"), [])),
+      ancestors.singleton(node.Info(name.unsafe("App"), [])),
       [],
-      node.Info(type_name.unsafe("User"), path: [
+      node.Info(name.unsafe("User"), path: [
         node.SegParam(parameter.unsafe_int("id")),
       ]),
     )
