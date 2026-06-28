@@ -29,7 +29,7 @@ pub fn products_product_path(products_product_id: Int) -> String {
 }
 
 pub fn user_show_route(user_id: Int) -> Route {
-  UserShow |> User(user_id)
+  UserShow |> User(user_id, _)
 }
 
 pub fn user_show_path(user_id: Int) -> String {
@@ -37,7 +37,7 @@ pub fn user_show_path(user_id: Int) -> String {
 }
 
 pub fn user_delete_route(user_id: Int) -> Route {
-  UserDelete |> User(user_id)
+  UserDelete |> User(user_id, _)
 }
 
 pub fn user_delete_path(user_id: Int) -> String {

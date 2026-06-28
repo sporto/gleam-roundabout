@@ -68,6 +68,23 @@ pub fn generate_route_helper_ancestors_test() {
   assert actual == "AppUser(app_user_id) |> App"
 }
 
+pub fn generate_route_helper_ancestors_2_test() {
+  let actual =
+    generate_helpers.generate_route_helper_body(
+      ancestors.singleton(node.Info(name.unsafe("App"), [
+        node.SegParam(parameter.unsafe_str("lang")),
+      ])),
+      [],
+      node.Info(name.unsafe("User"), path: [
+        node.SegParam(parameter.unsafe_int("id")),
+      ]),
+    )
+    |> doc.join(common.pipe_join())
+    |> doc.to_string(80)
+
+  assert actual == "AppUser(app_user_id) |> App(app_lang, _)"
+}
+
 pub fn generate_helpers_rec_test() {
   let root = fixtures.fixture_root()
 

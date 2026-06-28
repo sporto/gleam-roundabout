@@ -118,7 +118,7 @@ pub fn generate_route_helper_body(
     |> list.map(parameter.print_name_qualified)
     |> fn(entries) {
       case list.length(acc) {
-        0 | 1 -> entries
+        0 -> entries
         _ -> {
           list.append(entries, ["_"])
         }
@@ -129,6 +129,9 @@ pub fn generate_route_helper_body(
     True -> ""
     False -> "(" <> string.join(params, ", ") <> ")"
   }
+
+  // A type with only one param, doesn't need the _
+  let params = string.replace(params, "(_)", "")
 
   let type_name = common.generate_type_name(ancestors, info)
 
