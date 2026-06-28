@@ -5,7 +5,6 @@ import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/common.{pipe_join}
 import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
-import roundabout/internal/type_name
 
 pub fn generate_helpers_rec(
   ancestors: Ancestors(Info),
@@ -37,7 +36,8 @@ fn generate_helpers(ancestors: Ancestors(Info), node: Node) -> Document {
 }
 
 fn generate_route_helper(ancestors: Ancestors(Info), cont: Node) -> Document {
-  let function_name = common.get_function_name(ancestors, cont.info) <> "_route"
+  let function_name =
+    common.generate_function_name(ancestors, cont.info) <> "_route"
 
   let function_arguments = common.get_function_arguments(ancestors, cont.info)
 
@@ -66,7 +66,7 @@ fn generate_route_helper(ancestors: Ancestors(Info), cont: Node) -> Document {
 }
 
 fn generate_path_helper(ancestors: Ancestors(Info), cont: Node) -> Document {
-  let function_name_prefix = common.get_function_name(ancestors, cont.info)
+  let function_name_prefix = common.generate_function_name(ancestors, cont.info)
   let route_function_name = function_name_prefix <> "_route"
   let path_function_name = function_name_prefix <> "_path"
 

@@ -7,7 +7,7 @@ import roundabout/internal/node.{
   type Info, type Node, type Segment, SegFixed, SegParam,
 }
 import roundabout/internal/parameter
-import roundabout/internal/qualified.{type Unqualified}
+import roundabout/internal/qualified.{type Qualified, type Unqualified}
 import roundabout/internal/type_name
 
 pub const double_quote = "\""
@@ -31,25 +31,16 @@ pub fn case_arrow() {
   |> doc.append(doc.flex_break(" ", ""))
 }
 
-pub fn get_function_name(ancestors: Ancestors(Info), info: Info) -> String {
-  get_function_name_do([], ancestors, info)
-  |> list.filter(fn(seg) { seg != "" })
-  |> string.join("_")
-}
-
-fn get_function_name_do(
-  collected: List(String),
+pub fn generate_function_name(
   ancestors: Ancestors(Info),
   info: Info,
-) {
-  let next = list.prepend(collected, type_name.snake(info.name))
-
-  case ancestors.pop(ancestors) {
-    Ok(#(next_ancestor, rest_ancestors)) -> {
-      get_function_name_do(next, rest_ancestors, next_ancestor)
-    }
-    _ -> next
-  }
+) -> String {
+  ancestors
+  |> ancestors.filter(fn(a) { !type_name.is_root(a.name) })
+  |> ancestors.push(info)
+  |> ancestors.map(fn(a) { type_name.snake(a.name) })
+  |> ancestors.to_list
+  |> string.join("_")
 }
 
 pub fn get_type_name(ancestors: Ancestors(Info), info: Info) -> String {
@@ -86,22 +77,23 @@ pub fn segment_to_param(
 pub fn get_function_arguments(
   ancestors: Ancestors(Info),
   info: Info,
-) -> List(parameter.Parameter(Unqualified)) {
+) -> List(parameter.Parameter(Qualified)) {
   get_function_arguments_rec(ancestors, [], info)
 }
 
 fn get_function_arguments_rec(
   ancestors: Ancestors(Info),
-  acc: List(parameter.Parameter(Unqualified)),
+  acc: List(parameter.Parameter(Qualified)),
   info: Info,
-) -> List(parameter.Parameter(Unqualified)) {
+) -> List(parameter.Parameter(Qualified)) {
+  let ancestors_names = ancestors.map(ancestors, fn(a) { a.name })
+
   let new_params =
     info.path
     |> list.filter_map(segment_to_param)
+    |> list.map(parameter.qualify_name(ancestors_names, info.name, _))
 
-  let next_acc =
-    list.append(new_params, acc)
-    |> list.map(parameter.prepend_name(type_name.snake(info.name), _))
+  let next_acc = list.append(new_params, acc)
 
   case ancestors.pop(ancestors) {
     Ok(#(next_ancestor, rest_ancestors)) ->

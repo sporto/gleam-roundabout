@@ -59,13 +59,6 @@ pub fn kind(p: Parameter(qua)) {
   p.kind
 }
 
-pub fn prepend_name(namespace: String, parameter: Parameter(qua)) {
-  case namespace {
-    "" -> parameter
-    _ -> Parameter(..parameter, name: namespace <> "_" <> parameter.name)
-  }
-}
-
 pub fn print_type_name(p: Parameter(qua)) {
   case p.kind {
     Str -> "String"

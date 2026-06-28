@@ -77,16 +77,6 @@ pub fn qualify_name_test() {
     == "app_members_user_id"
 }
 
-pub fn prepend_name_test() {
-  let actual = parameter.prepend_name("app_users", parameter.unsafe_int("id"))
-  assert actual == parameter.unsafe_int("app_users_id")
-}
-
-pub fn prepend_name_empty_test() {
-  let actual = parameter.prepend_name("", parameter.unsafe_int("id"))
-  assert actual == parameter.unsafe_int("id")
-}
-
 pub fn print_name_and_type_test() {
   assert parameter.unsafe_int("client_id")
     |> print_name_and_type

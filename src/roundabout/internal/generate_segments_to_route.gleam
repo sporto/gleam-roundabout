@@ -54,7 +54,7 @@ pub fn generate_segments_to_route(
     |> doc.append(doc.from_string("_ -> Error(Nil)"))
 
   let function_name =
-    [common.get_function_name(ancestors, node.info), "segments_to_route"]
+    [common.generate_function_name(ancestors, node.info), "segments_to_route"]
     |> list.filter(fn(name) { !string.is_empty(name) })
     |> string.join("_")
 
@@ -153,7 +153,8 @@ fn generate_segments_to_route_case(
     }
     False -> {
       let fn_name =
-        common.get_function_name(ancestors, node.info) <> "_segments_to_route"
+        common.generate_function_name(ancestors, node.info)
+        <> "_segments_to_route"
 
       doc.concat([
         doc.from_string(fn_name <> "(rest)"),

@@ -41,7 +41,7 @@ pub fn generate_route_to_path(
     |> doc.join(doc.line)
 
   let function_name =
-    [common.get_function_name(ancestors, node.info), "route_to_path"]
+    [common.generate_function_name(ancestors, node.info), "route_to_path"]
     |> list.filter(fn(name) { !string.is_empty(name) })
     |> string.join("_")
 
@@ -185,7 +185,7 @@ pub fn get_branch_result(
         self
         |> doc.append(common.string_join())
         |> doc.append(doc.from_string(
-          common.get_function_name(ancestors, node.info)
+          common.generate_function_name(ancestors, node.info)
           <> "_route_to_path(sub)",
         ))
     }
