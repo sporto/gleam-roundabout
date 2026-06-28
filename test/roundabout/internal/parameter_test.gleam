@@ -23,6 +23,34 @@ pub fn invalid_test() {
   assert new("123", Int) == Error("Invalid parameter name 123")
 }
 
+pub fn qualified_name_test() {
+  assert parameter.qualified_name([], "user", parameter.unsafe_int("id"))
+    == "user_id"
+
+  assert parameter.qualified_name([], "User", parameter.unsafe_int("id"))
+    == "user_id"
+
+  assert parameter.qualified_name(["app"], "user", parameter.unsafe_int("id"))
+    == "app_user_id"
+
+  assert parameter.qualified_name(["App"], "user", parameter.unsafe_int("id"))
+    == "app_user_id"
+
+  assert parameter.qualified_name(
+      ["BigApp"],
+      "user",
+      parameter.unsafe_int("id"),
+    )
+    == "big_app_user_id"
+
+  assert parameter.qualified_name(
+      ["members", "app"],
+      "user",
+      parameter.unsafe_int("id"),
+    )
+    == "app_members_user_id"
+}
+
 pub fn prepend_name_test() {
   let actual = parameter.prepend_name("app_users", parameter.unsafe_int("id"))
   assert actual == parameter.unsafe_int("app_users_id")

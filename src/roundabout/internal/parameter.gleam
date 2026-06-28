@@ -45,9 +45,11 @@ pub fn qualified_name(
   p: Parameter,
 ) -> String {
   ancestors
+  |> list.reverse
   |> list.filter(fn(a) { !string.is_empty(a) })
-  |> list.append([node_name, name(p)])
+  |> list.append([node_name, p.name])
   |> string.join("_")
+  |> justin.snake_case
 }
 
 pub fn kind(p: Parameter) {
