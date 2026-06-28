@@ -1,6 +1,7 @@
 import gleam/result
 import roundabout/internal/ancestors
 import roundabout/internal/parameter.{Int, name, new, print_name_and_type}
+import roundabout/internal/type_name
 
 pub fn valid_test() {
   assert new("client_id", Int) |> result.map(name) == Ok("client_id")
@@ -27,44 +28,44 @@ pub fn invalid_test() {
 pub fn qualified_name_test() {
   assert parameter.qualified_name(
       ancestors.empty(),
-      "user",
+      type_name.unsafe("user"),
       parameter.unsafe_int("id"),
     )
     == "user_id"
 
   assert parameter.qualified_name(
       ancestors.empty(),
-      "User",
+      type_name.unsafe("User"),
       parameter.unsafe_int("id"),
     )
     == "user_id"
 
   assert parameter.qualified_name(
-      ancestors.singleton("app"),
-      "user",
+      ancestors.singleton(type_name.unsafe("app")),
+      type_name.unsafe("user"),
       parameter.unsafe_int("id"),
     )
     == "app_user_id"
 
   assert parameter.qualified_name(
-      ancestors.singleton("App"),
-      "user",
+      ancestors.singleton(type_name.unsafe("App")),
+      type_name.unsafe("user"),
       parameter.unsafe_int("id"),
     )
     == "app_user_id"
 
   assert parameter.qualified_name(
-      ancestors.singleton("BigApp"),
-      "user",
+      ancestors.singleton(type_name.unsafe("BigApp")),
+      type_name.unsafe("user"),
       parameter.unsafe_int("id"),
     )
     == "big_app_user_id"
 
   assert parameter.qualified_name(
       ancestors.empty()
-        |> ancestors.push("app")
-        |> ancestors.push("members"),
-      "user",
+        |> ancestors.push(type_name.unsafe("app"))
+        |> ancestors.push(type_name.unsafe("members")),
+      type_name.unsafe("user"),
       parameter.unsafe_int("id"),
     )
     == "app_members_user_id"

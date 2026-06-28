@@ -109,16 +109,12 @@ pub fn generate_route_helper_body(
 ) -> List(Document) {
   let ancestor_names =
     ancestors
-    |> ancestors.map(fn(info) { type_name.snake(info.name) })
+    |> ancestors.map(fn(info) { info.name })
 
   let params =
     info.path
     |> list.filter_map(common.segment_to_param)
-    |> list.map(parameter.qualified_name(
-      ancestor_names,
-      type_name.snake(info.name),
-      _,
-    ))
+    |> list.map(parameter.qualified_name(ancestor_names, info.name, _))
     |> fn(entries) {
       case list.length(acc) {
         0 | 1 -> entries

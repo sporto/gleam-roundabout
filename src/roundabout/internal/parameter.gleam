@@ -1,8 +1,8 @@
-import gleam/list
 import gleam/regexp
 import gleam/string
 import justin
 import roundabout/internal/ancestors.{type Ancestors}
+import roundabout/internal/type_name
 
 pub type Kind {
   Int
@@ -41,13 +41,14 @@ pub fn name(p: Parameter) -> String {
 }
 
 pub fn qualified_name(
-  ancestors: Ancestors(String),
-  node_name: String,
+  ancestors: Ancestors(type_name.TypeName),
+  node_name: type_name.TypeName,
   p: Parameter,
 ) -> String {
   ancestors
-  |> ancestors.filter(fn(a) { !string.is_empty(a) })
+  |> ancestors.filter(fn(a) { !type_name.is_root(a) })
   |> ancestors.push(node_name)
+  |> ancestors.map(type_name.name)
   |> ancestors.push(p.name)
   |> ancestors.to_list
   |> string.join("_")

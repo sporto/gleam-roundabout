@@ -27,3 +27,7 @@ pub fn name(input: TypeName) -> String {
 pub fn snake(input: TypeName) -> String {
   input.name |> justin.snake_case
 }
+
+pub fn is_root(input: TypeName) {
+  input.name == ""
+}
