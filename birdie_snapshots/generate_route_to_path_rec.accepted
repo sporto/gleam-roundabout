@@ -9,14 +9,14 @@ pub fn route_to_path(route: Route) -> String {
     Home -> "/"
     Orders -> "/" <> "orders"
     Products(sub) -> "/" <> "products" <> products_route_to_path(sub)
-    User(user_id, sub) ->
-      "/" <> "users" <> "/" <> int.to_string(user_id) <> user_route_to_path(sub)
+    User(id, sub) ->
+      "/" <> "users" <> "/" <> int.to_string(id) <> user_route_to_path(sub)
   }
 }
 
 fn products_route_to_path(route: ProductsRoute) -> String {
   case route {
-    ProductsProduct(product_id) -> "/" <> int.to_string(product_id)
+    ProductsProduct(id) -> "/" <> int.to_string(id)
   }
 }
 

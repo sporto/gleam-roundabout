@@ -98,26 +98,28 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
   ])
 }
 
-fn generate_route_helper_body(
+pub fn generate_route_helper_body(
   ancestors: List(Info),
   acc: List(Document),
   info: Info,
 ) -> List(Document) {
+  let ancestor_names =
+    list.map(ancestors, fn(info) { type_name.snake(info.name) })
+
   let params =
     info.path
-    |> list.filter_map(fn(segment) {
-      case segment {
-        SegFixed(_) -> Error(Nil)
-        SegParam(param) -> {
-          { type_name.snake(info.name) <> "_" <> parameter.name(param) }
-          |> Ok
-        }
-      }
-    })
+    |> list.filter_map(common.segment_to_param)
+    |> list.map(parameter.qualified_name(
+      ancestor_names,
+      type_name.snake(info.name),
+      _,
+    ))
     |> fn(entries) {
-      case list.is_empty(acc) {
-        True -> entries
-        False -> list.append(entries, ["_"])
+      case list.length(acc) {
+        0 | 1 -> entries
+        _ -> {
+          list.append(entries, ["_"])
+        }
       }
     }
 

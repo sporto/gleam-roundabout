@@ -12,9 +12,9 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
       products_segments_to_route(rest) |> result.map(fn(sub) {
         Products(sub)
       })
-    ["users", user_id, ..rest] -> with_int(user_id, fn(user_id) { 
+    ["users", id, ..rest] -> with_int(id, fn(id) { 
         user_segments_to_route(rest) |> result.map(fn(sub) {
-          User(user_id, sub)
+          User(id, sub)
         })
        })
     _ -> Error(Nil)
@@ -23,8 +23,8 @@ pub fn segments_to_route(segments: List(String)) -> Result(Route, Nil) {
 
 fn products_segments_to_route(segments: List(String)) -> Result(ProductsRoute, Nil) {
   case segments {
-    [product_id] -> with_int(product_id, fn(product_id) { 
-        ProductsProduct(product_id) |> Ok
+    [id] -> with_int(id, fn(id) { 
+        ProductsProduct(id) |> Ok
        })
     _ -> Error(Nil)
   }

@@ -8,7 +8,7 @@ pub type Route {
   Home
   Orders
   Products(sub: ProductsRoute)
-  User(user_id: Int, sub: UserRoute)
+  User(id: Int, sub: UserRoute)
 }
 
 

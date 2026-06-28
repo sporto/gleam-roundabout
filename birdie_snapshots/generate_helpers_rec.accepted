@@ -20,26 +20,28 @@ pub fn orders_path() -> String {
   orders_route() |> route_to_path
 }
 
-pub fn products_product_route(products_product_product_id: Int) -> Route {
-  ProductsProduct(products_product_product_id) |> Products(_)
+pub fn products_product_route(products_product_id: Int) -> Route {
+  ProductsProduct(products_product_id) |> Products
 }
 
-pub fn products_product_path(products_product_product_id: Int) -> String {
-  products_product_route(products_product_product_id) |> route_to_path
+pub fn products_product_path(products_product_id: Int) -> String {
+  products_product_route(products_product_id) |> route_to_path
 }
 
-pub fn user_show_route(user_user_id: Int) -> Route {
-  UserShow |> User(user_user_id, _)
+pub fn user_show_route(user_id: Int) -> Route {
+  UserShow |> User(user_id)
 }
 
-pub fn user_show_path(user_user_id: Int) -> String {
-  user_show_route(user_user_id) |> route_to_path
+pub fn user_show_path(user_id: Int) -> String {
+  user_show_route(user_id) |> route_to_path
 }
 
-pub fn user_delete_route(user_user_id: Int) -> Route {
-  UserDelete |> User(user_user_id, _)
+pub fn user_delete_route(user_id: Int) -> Route {
+  UserDelete |> User(user_id)
 }
 
-pub fn user_delete_path(user_user_id: Int) -> String {
-  user_delete_route(user_user_id) |> route_to_path
+pub fn user_delete_path(user_id: Int) -> String {
+  user_delete_route(user_id) |> route_to_path
 }
+
+

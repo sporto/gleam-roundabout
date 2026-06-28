@@ -50,6 +50,26 @@ fn get_function_name_do(
   }
 }
 
+// pub fn get_parameter_name(ancestors: List(Info), info: Info) -> String {
+//   get_parameter_name_do([], ancestors, info)
+//   |> string.join("")
+// }
+
+// fn get_parameter_name_do(
+//   collected: List(String),
+//   ancestors: List(Info),
+//   info: Info,
+// ) {
+//   let next = list.prepend(collected, type_name.snake(info.name))
+
+//   case ancestors {
+//     [next_ancestor, ..rest_ancestors] -> {
+//       get_type_name_do(next, rest_ancestors, next_ancestor)
+//     }
+//     _ -> next
+//   }
+// }
+
 pub fn get_type_name(ancestors: List(Info), info: Info) -> String {
   get_type_name_do([], ancestors, info)
   |> string.join("")
@@ -70,7 +90,7 @@ fn get_type_name_do(
   }
 }
 
-fn segment_to_param(segment: Segment) -> Result(parameter.Parameter, Nil) {
+pub fn segment_to_param(segment: Segment) -> Result(parameter.Parameter, Nil) {
   case segment {
     SegFixed(_) -> Error(Nil)
     SegParam(param) -> {

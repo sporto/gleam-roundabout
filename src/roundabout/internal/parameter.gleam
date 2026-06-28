@@ -1,4 +1,6 @@
+import gleam/list
 import gleam/regexp
+import gleam/string
 import justin
 
 pub type Kind {
@@ -29,8 +31,23 @@ pub fn unsafe_int(name: String) {
   Parameter(name, Int)
 }
 
+pub fn unsafe_str(name: String) {
+  Parameter(name, Str)
+}
+
 pub fn name(p: Parameter) -> String {
   p.name
+}
+
+pub fn qualified_name(
+  ancestors: List(String),
+  node_name: String,
+  p: Parameter,
+) -> String {
+  ancestors
+  |> list.filter(fn(a) { !string.is_empty(a) })
+  |> list.append([node_name, name(p)])
+  |> string.join("_")
 }
 
 pub fn kind(p: Parameter) {
