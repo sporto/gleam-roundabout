@@ -2,6 +2,7 @@ import gleam/list
 import gleam/regexp
 import gleam/string
 import justin
+import roundabout/internal/ancestors.{type Ancestors}
 
 pub type Kind {
   Int
@@ -40,14 +41,15 @@ pub fn name(p: Parameter) -> String {
 }
 
 pub fn qualified_name(
-  ancestors: List(String),
+  ancestors: Ancestors(String),
   node_name: String,
   p: Parameter,
 ) -> String {
   ancestors
-  |> list.reverse
-  |> list.filter(fn(a) { !string.is_empty(a) })
-  |> list.append([node_name, p.name])
+  |> ancestors.filter(fn(a) { !string.is_empty(a) })
+  |> ancestors.push(node_name)
+  |> ancestors.push(p.name)
+  |> ancestors.to_list
   |> string.join("_")
   |> justin.snake_case
 }

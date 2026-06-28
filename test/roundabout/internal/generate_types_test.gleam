@@ -1,5 +1,6 @@
 import birdie
 import glam/doc
+import roundabout/internal/ancestors
 import roundabout/internal/fixtures
 import roundabout/internal/generate_types
 import roundabout/internal/node.{Info, Node, SegParam}
@@ -8,7 +9,7 @@ import roundabout/internal/type_name
 
 pub fn generate_type_root_test() {
   let root = fixtures.fixture_root()
-  let actual = generate_types.generate_type([], root)
+  let actual = generate_types.generate_type(ancestors.empty(), root)
 
   actual
   |> doc.to_string(80)
@@ -16,7 +17,8 @@ pub fn generate_type_root_test() {
 }
 
 pub fn generate_type_child_test() {
-  let ancestors = [Info(name: type_name.unsafe("Client"), path: [])]
+  let ancestors =
+    ancestors.singleton(Info(name: type_name.unsafe("Client"), path: []))
 
   let assert Ok(par_id) = parameter.new("id", parameter.Int)
 
@@ -37,7 +39,7 @@ pub fn generate_type_child_test() {
 
 pub fn generate_type_rec_test() {
   let root = fixtures.fixture_root()
-  let actual = generate_types.generate_type_rec([], root)
+  let actual = generate_types.generate_type_rec(ancestors.empty(), root)
 
   actual
   |> doc.to_string(80)

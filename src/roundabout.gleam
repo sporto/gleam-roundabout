@@ -5,6 +5,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 import justin
+import roundabout/internal/ancestors
 import roundabout/internal/fixed
 import roundabout/internal/generate_helpers
 import roundabout/internal/generate_other
@@ -91,15 +92,18 @@ pub fn main(definitions: List(Route), output_path: String) {
     False -> output_path <> ".gleam"
   }
 
-  let types = generate_types.generate_type_rec([], root)
+  let types = generate_types.generate_type_rec(ancestors.empty(), root)
 
   let segments_to_route =
-    generate_segments_to_route.generate_segments_to_route_rec([], root)
+    generate_segments_to_route.generate_segments_to_route_rec(
+      ancestors.empty(),
+      root,
+    )
 
   let routes_to_path =
-    generate_route_to_path.generate_route_to_path_rec([], root)
+    generate_route_to_path.generate_route_to_path_rec(ancestors.empty(), root)
 
-  let helpers = generate_helpers.generate_helpers_rec([], root)
+  let helpers = generate_helpers.generate_helpers_rec(ancestors.empty(), root)
 
   let utils = generate_other.generate_utils()
 
@@ -203,7 +207,10 @@ fn parse_definition_info(input: Route) {
   node.Info(name:, path:) |> Ok
 }
 
-fn assert_no_duplicate_segment_names(node_name: String, segments: List(Segment)) {
+fn assert_no_duplicate_segment_names(
+  node_name: String,
+  segments: List(Segment),
+) {
   let segment_names =
     list.filter_map(segments, fn(seg) {
       case seg {

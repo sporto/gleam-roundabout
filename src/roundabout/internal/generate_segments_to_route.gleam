@@ -1,6 +1,7 @@
 import glam/doc.{type Document}
 import gleam/list
 import gleam/string
+import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/common.{case_arrow, double_quote, pipe_join}
 import roundabout/internal/fixed
 import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
@@ -19,13 +20,13 @@ import roundabout/internal/parameter
 /// ```
 ///
 pub fn generate_segments_to_route_rec(
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   node: Node,
 ) -> Document {
   case list.is_empty(node.children) {
     True -> doc.from_string("")
     False -> {
-      let next_ancestors = list.prepend(ancestors, node.info)
+      let next_ancestors = ancestors.push(ancestors, node.info)
 
       let sub_types =
         list.map(node.children, fn(sub) {
@@ -39,8 +40,11 @@ pub fn generate_segments_to_route_rec(
   }
 }
 
-pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> Document {
-  let next_ancestors = list.prepend(ancestors, node.info)
+pub fn generate_segments_to_route(
+  ancestors: Ancestors(Info),
+  node: Node,
+) -> Document {
+  let next_ancestors = ancestors.push(ancestors, node.info)
 
   let segments_to_route_cases =
     node.children
@@ -56,7 +60,7 @@ pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> Document
 
   let type_name = common.get_type_name(ancestors, node.info)
 
-  let pub_prefix = case list.is_empty(ancestors) {
+  let pub_prefix = case ancestors.is_empty(ancestors) {
     True -> "pub "
     False -> ""
   }
@@ -93,7 +97,7 @@ pub fn generate_segments_to_route(ancestors: List(Info), node: Node) -> Document
 }
 
 fn generate_segments_to_route_case(
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   node: Node,
 ) -> Document {
   let matched_params =

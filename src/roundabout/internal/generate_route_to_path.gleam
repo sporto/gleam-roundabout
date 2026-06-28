@@ -1,16 +1,20 @@
 import glam/doc.{type Document}
 import gleam/list
 import gleam/string
+import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/common
 import roundabout/internal/fixed
 import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 
-pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) -> Document {
+pub fn generate_route_to_path_rec(
+  ancestors: Ancestors(Info),
+  node: Node,
+) -> Document {
   case list.is_empty(node.children) {
     True -> doc.from_string("")
     False -> {
-      let next_ancestors = list.prepend(ancestors, node.info)
+      let next_ancestors = ancestors.push(ancestors, node.info)
 
       let sub_types =
         list.map(node.children, fn(node) {
@@ -24,9 +28,12 @@ pub fn generate_route_to_path_rec(ancestors: List(Info), node: Node) -> Document
   }
 }
 
-pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> Document {
-  let is_root = list.is_empty(ancestors)
-  let next_ancestors = list.prepend(ancestors, node.info)
+pub fn generate_route_to_path(
+  ancestors: Ancestors(Info),
+  node: Node,
+) -> Document {
+  let is_root = ancestors.is_empty(ancestors)
+  let next_ancestors = ancestors.push(ancestors, node.info)
 
   let route_to_path_cases =
     node.children
@@ -38,7 +45,7 @@ pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> Document {
     |> list.filter(fn(name) { !string.is_empty(name) })
     |> string.join("_")
 
-  let pub_prefix = case list.is_empty(ancestors) {
+  let pub_prefix = case ancestors.is_empty(ancestors) {
     True -> "pub "
     False -> ""
   }
@@ -76,7 +83,7 @@ pub fn generate_route_to_path(ancestors: List(Info), node: Node) -> Document {
 
 fn generate_route_to_path_case(
   is_root: Bool,
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   node: Node,
 ) -> Document {
   let variant_params =
@@ -115,7 +122,7 @@ fn generate_route_to_path_case(
 
 pub fn get_branch_result(
   is_root: Bool,
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   node: Node,
 ) -> Document {
   let has_segments = !list.is_empty(node.info.path)

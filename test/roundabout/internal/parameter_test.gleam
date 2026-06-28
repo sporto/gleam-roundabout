@@ -1,4 +1,5 @@
 import gleam/result
+import roundabout/internal/ancestors
 import roundabout/internal/parameter.{Int, name, new, print_name_and_type}
 
 pub fn valid_test() {
@@ -24,27 +25,45 @@ pub fn invalid_test() {
 }
 
 pub fn qualified_name_test() {
-  assert parameter.qualified_name([], "user", parameter.unsafe_int("id"))
+  assert parameter.qualified_name(
+      ancestors.empty(),
+      "user",
+      parameter.unsafe_int("id"),
+    )
     == "user_id"
 
-  assert parameter.qualified_name([], "User", parameter.unsafe_int("id"))
+  assert parameter.qualified_name(
+      ancestors.empty(),
+      "User",
+      parameter.unsafe_int("id"),
+    )
     == "user_id"
 
-  assert parameter.qualified_name(["app"], "user", parameter.unsafe_int("id"))
-    == "app_user_id"
-
-  assert parameter.qualified_name(["App"], "user", parameter.unsafe_int("id"))
+  assert parameter.qualified_name(
+      ancestors.singleton("app"),
+      "user",
+      parameter.unsafe_int("id"),
+    )
     == "app_user_id"
 
   assert parameter.qualified_name(
-      ["BigApp"],
+      ancestors.singleton("App"),
+      "user",
+      parameter.unsafe_int("id"),
+    )
+    == "app_user_id"
+
+  assert parameter.qualified_name(
+      ancestors.singleton("BigApp"),
       "user",
       parameter.unsafe_int("id"),
     )
     == "big_app_user_id"
 
   assert parameter.qualified_name(
-      ["members", "app"],
+      ancestors.empty()
+        |> ancestors.push("app")
+        |> ancestors.push("members"),
       "user",
       parameter.unsafe_int("id"),
     )

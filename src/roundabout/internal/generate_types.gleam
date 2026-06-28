@@ -2,6 +2,7 @@ import glam/doc.{type Document}
 import gleam/list
 import gleam/option
 import gleam/string
+import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/common
 import roundabout/internal/node.{
   type Info, type Node, type Segment, SegFixed, SegParam,
@@ -20,11 +21,11 @@ import roundabout/internal/parameter
 ///   ...
 /// ```
 ///
-pub fn generate_type_rec(ancestors: List(Info), node: Node) -> Document {
+pub fn generate_type_rec(ancestors: Ancestors(Info), node: Node) -> Document {
   case list.is_empty(node.children) {
     True -> doc.from_string("")
     False -> {
-      let next_ancestors = list.prepend(ancestors, node.info)
+      let next_ancestors = ancestors.push(ancestors, node.info)
 
       let sub_types =
         node.children
@@ -37,8 +38,8 @@ pub fn generate_type_rec(ancestors: List(Info), node: Node) -> Document {
   }
 }
 
-pub fn generate_type(ancestors: List(Info), node: Node) -> Document {
-  let next_ancestors = list.prepend(ancestors, node.info)
+pub fn generate_type(ancestors: Ancestors(Info), node: Node) -> Document {
+  let next_ancestors = ancestors.push(ancestors, node.info)
 
   let variants =
     node.children
@@ -67,7 +68,7 @@ pub fn generate_type(ancestors: List(Info), node: Node) -> Document {
 /// ```
 ///   User(user_id: Int, sub: UserRoute)
 /// ```
-fn generate_type_variant(ancestors: List(Info), node: Node) -> Document {
+fn generate_type_variant(ancestors: Ancestors(Info), node: Node) -> Document {
   let type_name = common.get_type_name(ancestors, node.info)
 
   let sub = case list.is_empty(node.children) {
@@ -100,6 +101,6 @@ fn generate_type_variant_param(segment: Segment) {
   }
 }
 
-fn get_route_name(ancestors: List(Info), info: Info) -> String {
+fn get_route_name(ancestors: Ancestors(Info), info: Info) -> String {
   common.get_type_name(ancestors, info) <> "Route"
 }

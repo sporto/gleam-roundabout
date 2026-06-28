@@ -1,19 +1,23 @@
 import glam/doc.{type Document}
 import gleam/list
 import gleam/string
+import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/common.{pipe_join}
 import roundabout/internal/node.{type Info, type Node, SegFixed, SegParam}
 import roundabout/internal/parameter
 import roundabout/internal/type_name
 
-pub fn generate_helpers_rec(ancestors: List(Info), node: Node) -> Document {
+pub fn generate_helpers_rec(
+  ancestors: Ancestors(Info),
+  node: Node,
+) -> Document {
   // Only leaf nodes are generated
   case list.is_empty(node.children) {
     True -> {
       generate_helpers(ancestors, node)
     }
     False -> {
-      let next_ancestors = list.prepend(ancestors, node.info)
+      let next_ancestors = ancestors.push(ancestors, node.info)
 
       list.map(node.children, fn(node) {
         generate_helpers_rec(next_ancestors, node)
@@ -25,14 +29,14 @@ pub fn generate_helpers_rec(ancestors: List(Info), node: Node) -> Document {
 
 /// helpers
 ///
-fn generate_helpers(ancestors: List(Info), node: Node) -> Document {
+fn generate_helpers(ancestors: Ancestors(Info), node: Node) -> Document {
   doc.concat([
     generate_route_helper(ancestors, node),
     generate_path_helper(ancestors, node),
   ])
 }
 
-fn generate_route_helper(ancestors: List(Info), cont: Node) -> Document {
+fn generate_route_helper(ancestors: Ancestors(Info), cont: Node) -> Document {
   let function_name = common.get_function_name(ancestors, cont.info) <> "_route"
 
   let function_arguments = common.get_function_arguments(ancestors, cont.info)
@@ -61,7 +65,7 @@ fn generate_route_helper(ancestors: List(Info), cont: Node) -> Document {
   ])
 }
 
-fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
+fn generate_path_helper(ancestors: Ancestors(Info), cont: Node) -> Document {
   let function_name_prefix = common.get_function_name(ancestors, cont.info)
   let route_function_name = function_name_prefix <> "_route"
   let path_function_name = function_name_prefix <> "_path"
@@ -99,12 +103,13 @@ fn generate_path_helper(ancestors: List(Info), cont: Node) -> Document {
 }
 
 pub fn generate_route_helper_body(
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   acc: List(Document),
   info: Info,
 ) -> List(Document) {
   let ancestor_names =
-    list.map(ancestors, fn(info) { type_name.snake(info.name) })
+    ancestors
+    |> ancestors.map(fn(info) { type_name.snake(info.name) })
 
   let params =
     info.path
@@ -137,8 +142,8 @@ pub fn generate_route_helper_body(
     _ -> list.append(acc, [new_line])
   }
 
-  case ancestors {
-    [next_ancestor, ..rest_ancestors] -> {
+  case ancestors.pop(ancestors) {
+    Ok(#(next_ancestor, rest_ancestors)) -> {
       generate_route_helper_body(rest_ancestors, next_acc, next_ancestor)
     }
     _ -> next_acc

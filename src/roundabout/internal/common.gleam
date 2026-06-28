@@ -2,6 +2,7 @@ import glam/doc
 import gleam/list
 import gleam/result
 import gleam/string
+import roundabout/internal/ancestors.{type Ancestors}
 import roundabout/internal/node.{
   type Info, type Node, type Segment, SegFixed, SegParam,
 }
@@ -29,7 +30,7 @@ pub fn case_arrow() {
   |> doc.append(doc.flex_break(" ", ""))
 }
 
-pub fn get_function_name(ancestors: List(Info), info: Info) -> String {
+pub fn get_function_name(ancestors: Ancestors(Info), info: Info) -> String {
   get_function_name_do([], ancestors, info)
   |> list.filter(fn(seg) { seg != "" })
   |> string.join("_")
@@ -37,56 +38,36 @@ pub fn get_function_name(ancestors: List(Info), info: Info) -> String {
 
 fn get_function_name_do(
   collected: List(String),
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   info: Info,
 ) {
   let next = list.prepend(collected, type_name.snake(info.name))
 
-  case ancestors {
-    [next_ancestor, ..rest_ancestors] -> {
+  case ancestors.pop(ancestors) {
+    Ok(#(next_ancestor, rest_ancestors)) -> {
       get_function_name_do(next, rest_ancestors, next_ancestor)
     }
     _ -> next
   }
 }
 
-// pub fn get_parameter_name(ancestors: List(Info), info: Info) -> String {
-//   get_parameter_name_do([], ancestors, info)
-//   |> string.join("")
-// }
-
-// fn get_parameter_name_do(
-//   collected: List(String),
-//   ancestors: List(Info),
-//   info: Info,
-// ) {
-//   let next = list.prepend(collected, type_name.snake(info.name))
-
-//   case ancestors {
-//     [next_ancestor, ..rest_ancestors] -> {
-//       get_type_name_do(next, rest_ancestors, next_ancestor)
-//     }
-//     _ -> next
-//   }
-// }
-
-pub fn get_type_name(ancestors: List(Info), info: Info) -> String {
+pub fn get_type_name(ancestors: Ancestors(Info), info: Info) -> String {
   get_type_name_do([], ancestors, info)
   |> string.join("")
 }
 
 fn get_type_name_do(
   collected: List(String),
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   info: Info,
 ) {
   let next = list.prepend(collected, type_name.name(info.name))
 
-  case ancestors {
-    [next_ancestor, ..rest_ancestors] -> {
+  case ancestors.pop(ancestors) {
+    Ok(#(next_ancestor, rest_ancestors)) -> {
       get_type_name_do(next, rest_ancestors, next_ancestor)
     }
-    _ -> next
+    Error(_) -> next
   }
 }
 
@@ -100,14 +81,14 @@ pub fn segment_to_param(segment: Segment) -> Result(parameter.Parameter, Nil) {
 }
 
 pub fn get_function_arguments(
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   info: Info,
 ) -> List(parameter.Parameter) {
   get_function_arguments_rec(ancestors, [], info)
 }
 
 fn get_function_arguments_rec(
-  ancestors: List(Info),
+  ancestors: Ancestors(Info),
   acc: List(parameter.Parameter),
   info: Info,
 ) -> List(parameter.Parameter) {
@@ -119,9 +100,9 @@ fn get_function_arguments_rec(
     list.append(new_params, acc)
     |> list.map(parameter.prepend_name(type_name.snake(info.name), _))
 
-  case ancestors {
-    [next_ancestor, ..rest_ancestors] ->
+  case ancestors.pop(ancestors) {
+    Ok(#(next_ancestor, rest_ancestors)) ->
       get_function_arguments_rec(rest_ancestors, next_acc, next_ancestor)
-    _ -> next_acc
+    Error(_) -> next_acc
   }
 }
