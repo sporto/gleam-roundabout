@@ -106,7 +106,7 @@ fn generate_segments_to_route_case(
       case segment {
         SegFixed(value) ->
           doc.from_string(double_quote <> fixed.value(value) <> double_quote)
-        SegParam(param) -> doc.from_string(parameter.name(param))
+        SegParam(param) -> doc.from_string(parameter.print_name(param))
       }
     })
     |> fn(self) {
@@ -125,7 +125,7 @@ fn generate_segments_to_route_case(
     |> list.filter_map(fn(seg) {
       case seg {
         SegFixed(_) -> Error(Nil)
-        SegParam(param) -> Ok(parameter.name(param))
+        SegParam(param) -> Ok(parameter.print_name(param))
       }
     })
     |> fn(params) {
@@ -182,7 +182,7 @@ fn generate_segments_to_route_case(
           case parameter.kind(param) {
             parameter.Str -> acc
             parameter.Int -> {
-              let name = parameter.name(param)
+              let name = parameter.print_name(param)
 
               doc.concat([
                 doc.from_string(

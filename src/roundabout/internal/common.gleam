@@ -7,6 +7,7 @@ import roundabout/internal/node.{
   type Info, type Node, type Segment, SegFixed, SegParam,
 }
 import roundabout/internal/parameter
+import roundabout/internal/qualified.{type Unqualified}
 import roundabout/internal/type_name
 
 pub const double_quote = "\""
@@ -71,7 +72,9 @@ fn get_type_name_do(
   }
 }
 
-pub fn segment_to_param(segment: Segment) -> Result(parameter.Parameter, Nil) {
+pub fn segment_to_param(
+  segment: Segment,
+) -> Result(parameter.Parameter(Unqualified), Nil) {
   case segment {
     SegFixed(_) -> Error(Nil)
     SegParam(param) -> {
@@ -83,15 +86,15 @@ pub fn segment_to_param(segment: Segment) -> Result(parameter.Parameter, Nil) {
 pub fn get_function_arguments(
   ancestors: Ancestors(Info),
   info: Info,
-) -> List(parameter.Parameter) {
+) -> List(parameter.Parameter(Unqualified)) {
   get_function_arguments_rec(ancestors, [], info)
 }
 
 fn get_function_arguments_rec(
   ancestors: Ancestors(Info),
-  acc: List(parameter.Parameter),
+  acc: List(parameter.Parameter(Unqualified)),
   info: Info,
-) -> List(parameter.Parameter) {
+) -> List(parameter.Parameter(Unqualified)) {
   let new_params =
     info.path
     |> list.filter_map(segment_to_param)

@@ -79,7 +79,7 @@ fn generate_path_helper(ancestors: Ancestors(Info), cont: Node) -> Document {
 
   let callee_arguments =
     function_arguments
-    |> list.map(parameter.name)
+    |> list.map(parameter.print_name)
     |> string.join(", ")
 
   let body =
@@ -114,7 +114,8 @@ pub fn generate_route_helper_body(
   let params =
     info.path
     |> list.filter_map(common.segment_to_param)
-    |> list.map(parameter.qualified_name(ancestor_names, info.name, _))
+    |> list.map(parameter.qualify_name(ancestor_names, info.name, _))
+    |> list.map(parameter.print_name_qualified)
     |> fn(entries) {
       case list.length(acc) {
         0 | 1 -> entries

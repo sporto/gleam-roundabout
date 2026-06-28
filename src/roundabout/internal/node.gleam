@@ -1,10 +1,11 @@
 import roundabout/internal/fixed
 import roundabout/internal/parameter
+import roundabout/internal/qualified
 import roundabout/internal/type_name
 
 pub type Segment {
   SegFixed(value: fixed.Fixed)
-  SegParam(name: parameter.Parameter)
+  SegParam(name: parameter.Parameter(qualified.Unqualified))
 }
 
 pub type Info {

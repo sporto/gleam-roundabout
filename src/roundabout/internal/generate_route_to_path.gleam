@@ -93,7 +93,7 @@ fn generate_route_to_path_case(
         SegFixed(_) -> Error(Nil)
         SegParam(param) -> {
           param
-          |> parameter.name
+          |> parameter.print_name
           |> Ok
         }
       }
@@ -136,7 +136,7 @@ pub fn get_branch_result(
           )
         }
         SegParam(param) -> {
-          let name = parameter.name(param)
+          let name = parameter.print_name(param)
 
           case parameter.kind(param) {
             parameter.Str -> doc.from_string(name)
